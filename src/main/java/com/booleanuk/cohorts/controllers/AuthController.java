@@ -7,6 +7,7 @@ import com.booleanuk.cohorts.payload.request.LoginRequest;
 import com.booleanuk.cohorts.payload.request.SignupRequest;
 import com.booleanuk.cohorts.payload.response.JwtResponse;
 import com.booleanuk.cohorts.payload.response.MessageResponse;
+import com.booleanuk.cohorts.payload.response.TokenResponse;
 import com.booleanuk.cohorts.repository.RoleRepository;
 import com.booleanuk.cohorts.repository.UserRepository;
 import com.booleanuk.cohorts.security.jwt.JwtUtils;
@@ -26,9 +27,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@CrossOrigin(origins = "*",maxAge = 3600)
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("auth")
+@RequestMapping
 public class AuthController {
     @Autowired
     AuthenticationManager authenticationManager;
@@ -45,31 +46,34 @@ public class AuthController {
     @Autowired
     JwtUtils jwtUtils;
 
-    @PostMapping("/signin")
+    @PostMapping("login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         // If using a salt for password use it here
         Authentication authentication = authenticationManager
-                .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+                .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtUtils.generateJwtToken(authentication);
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         List<String> roles = userDetails.getAuthorities().stream().map((item) -> item.getAuthority())
                 .collect(Collectors.toList());
+
+        User user = userRepository.findByEmail(userDetails.getEmail()).orElse(null);
+
         return ResponseEntity
-                .ok(new JwtResponse(jwt, userDetails.getId(), userDetails.getUsername(), userDetails.getEmail(), roles));
+                .ok(new TokenResponse(new JwtResponse(jwt, user)));
     }
 
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signupRequest) {
-        if (userRepository.existsByUsername(signupRequest.getUsername())) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: Username is already taken"));
-        }
         if (userRepository.existsByEmail(signupRequest.getEmail())) {
             return ResponseEntity.badRequest().body(new MessageResponse("Error: Email is already in use!"));
         }
         // Create a new user add salt here if using one
-        User user = new User(signupRequest.getUsername(), signupRequest.getEmail(), encoder.encode(signupRequest.getPassword()));
+        User user = new User(signupRequest.getEmail(), encoder.encode(signupRequest.getPassword()));
+        if (signupRequest.getCohort() != null) {
+            user.setCohort(signupRequest.getCohort());
+        }
         Set<String> strRoles = signupRequest.getRole();
         Set<Role> roles = new HashSet<>();
 

@@ -1,5 +1,6 @@
 package com.booleanuk.cohorts.payload.response;
 
+import com.booleanuk.cohorts.models.User;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,16 +11,11 @@ import java.util.List;
 public class JwtResponse {
     private String token;
     private String type = "Bearer";
-    private int id;
-    private String username;
-    private String email;
-    private List<String> roles;
+    private User user;
 
-    public JwtResponse(String token, int id, String username, String email, List<String> roles) {
+
+    public JwtResponse(String token, User user) {
         this.token = token;
-        this.id = id;
-        this.username = username;
-        this.email = email;
-        this.roles = roles;
+
     }
 }

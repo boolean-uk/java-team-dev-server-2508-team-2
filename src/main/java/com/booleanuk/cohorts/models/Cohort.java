@@ -13,5 +13,7 @@ public class Cohort {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-
+    public Cohort(int id) {
+        this.id = id;
+    }
 }

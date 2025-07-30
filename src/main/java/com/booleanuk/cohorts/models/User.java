@@ -1,5 +1,6 @@
 package com.booleanuk.cohorts.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -15,7 +16,6 @@ import java.util.Set;
 @Entity
 @Table(name = "users",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = "username"),
                 @UniqueConstraint(columnNames = "email")
         })
 public class User {
@@ -24,13 +24,13 @@ public class User {
     private int id;
 
     @NotBlank
-    @Size(max = 20)
-    private String username;
-
-    @NotBlank
     @Size(max = 50)
     @Email
     private String email;
+
+    // The AuthController uses a built-in class for Users that expects a Username, we don't use it elsewhere in the code.
+    @Transient
+    private String username = this.email;
 
     @NotBlank
     @Size(max = 120)
@@ -40,24 +40,19 @@ public class User {
     @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
 
-    @Column
-    private String profile;
+    @ManyToOne
+    @JoinColumn(name = "cohort_id", nullable = true)
+    @JsonIgnoreProperties("users")
+    private Cohort cohort;
 
-    @Column
-    private String cohort;
-
-    @Column
-    private int cohortId;
-
-    @Column
-    private String post;
-
-    @Column
-    private String deliveryLogs;
-
-    public User(String username, String email, String password) {
-        this.username = username;
+    public User(String email, String password) {
         this.email = email;
         this.password = password;
+    }
+
+    public User(String email, String password, Cohort cohort) {
+        this.email = email;
+        this.password = password;
+        this.cohort = cohort;
     }
 }

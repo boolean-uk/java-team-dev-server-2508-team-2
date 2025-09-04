@@ -9,6 +9,7 @@ RUN git clone --branch $BRANCH https://github.com/boolean-uk/java-team-dev-clien
 
 WORKDIR /app
 
-RUN npm ci
+RUN npm install
 
 EXPOSE 3000
+# ENTRYPOINT [ "npm", "run" ]

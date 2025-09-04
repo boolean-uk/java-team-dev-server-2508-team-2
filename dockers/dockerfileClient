@@ -1,0 +1,14 @@
+FROM node:22
+
+RUN apt-get update && apt-get install git -y
+
+ARG BRANCH=main
+
+RUN git clone --branch $BRANCH https://github.com/boolean-uk/java-team-dev-client-2508-team-2.git /app
+
+
+WORKDIR /app
+
+RUN npm ci
+
+EXPOSE 3000

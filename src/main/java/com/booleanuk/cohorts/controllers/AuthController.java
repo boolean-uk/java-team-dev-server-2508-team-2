@@ -66,40 +66,47 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signupRequest) {
-        if (userRepository.existsByEmail(signupRequest.getEmail())) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: Email is already in use!"));
+        String email = signupRequest.getEmail();
+        String password = signupRequest.getPassword();
+
+        if (email == null || email.isBlank()) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Email cannot be blank"));
         }
-        // Create a new user add salt here if using one
-        User user = new User(signupRequest.getEmail(), encoder.encode(signupRequest.getPassword()));
+
+        String emailRegex = "^[A-Za-z0-9+_.-]+@(.+)$";
+        if (!email.matches(emailRegex)) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Email format is invalid"));
+        }
+
+        if (userRepository.existsByEmail(email)) {
+            return ResponseEntity.status(409).body(new MessageResponse("Email already in use"));
+        }
+
+        if (password == null || password.length() < 8) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Password must be at least 8 characters long"));
+        }
+        if (!password.matches(".*[A-Z].*")) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Password must contain at least one uppercase letter"));
+        }
+        if (!password.matches(".*\\d.*")) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Password must contain at least one number"));
+        }
+        if (!password.matches(".*[!@#$%^&*()].*")) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Password must contain at least one special character"));
+        }
+
+        User user = new User(email, encoder.encode(password));
         if (signupRequest.getCohort() != null) {
             user.setCohort(signupRequest.getCohort());
         }
-        Set<String> strRoles = signupRequest.getRole();
-        Set<Role> roles = new HashSet<>();
 
-        if (strRoles == null) {
-            Role studentRole = roleRepository.findByName(ERole.ROLE_STUDENT).orElseThrow(() -> new RuntimeException("Error: Role is not found"));
-            roles.add(studentRole);
-        } else {
-            strRoles.forEach((role) -> {
-                switch (role) {
-                    case "admin":
-                        Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN).orElseThrow(() -> new RuntimeException("Error: Role is not found"));
-                        roles.add(adminRole);
-                        break;
-                    case "teacher":
-                        Role teacherRole = roleRepository.findByName(ERole.ROLE_TEACHER).orElseThrow(() -> new RuntimeException("Error: Role is not found"));
-                        roles.add(teacherRole);
-                        break;
-                    default:
-                        Role studentRole = roleRepository.findByName(ERole.ROLE_STUDENT).orElseThrow(() -> new RuntimeException("Error: Role is not found"));
-                        roles.add(studentRole);
-                        break;
-                }
-            });
-        }
-        user.setRoles(roles);
+        Role studentRole = roleRepository.findByName(ERole.ROLE_STUDENT)
+                .orElseThrow(() -> new RuntimeException("Error: Role not found"));
+        user.getRoles().add(studentRole);
+
         userRepository.save(user);
-        return ResponseEntity.ok((new MessageResponse("User registered successfully")));
+
+        return ResponseEntity.status(201).body(new MessageResponse("User registered successfully"));
     }
+
 }

@@ -1,6 +1,8 @@
 package com.booleanuk.cohorts.models;
 
+import com.booleanuk.cohorts.views.Views;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonView;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,6 +14,7 @@ import lombok.NoArgsConstructor;
 public class Profile {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonView(Views.basicProfileInfo.class)
     private int id;
 
     @OneToOne
@@ -20,9 +23,11 @@ public class Profile {
     private User user;
 
     @Column
+    @JsonView(Views.basicProfileInfo.class)
     private String firstName;
 
     @Column
+    @JsonView(Views.basicProfileInfo.class)
     private String lastName;
 
     @Column

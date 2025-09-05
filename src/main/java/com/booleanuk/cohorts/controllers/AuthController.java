@@ -5,6 +5,7 @@ import com.booleanuk.cohorts.models.Role;
 import com.booleanuk.cohorts.models.User;
 import com.booleanuk.cohorts.payload.request.LoginRequest;
 import com.booleanuk.cohorts.payload.request.SignupRequest;
+import com.booleanuk.cohorts.payload.response.ErrorResponse;
 import com.booleanuk.cohorts.payload.response.JwtResponse;
 import com.booleanuk.cohorts.payload.response.MessageResponse;
 import com.booleanuk.cohorts.payload.response.TokenResponse;
@@ -50,7 +51,8 @@ public class AuthController {
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         // If using a salt for password use it here
         Authentication authentication = authenticationManager
-                .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+                .authenticate(
+                        new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtUtils.generateJwtToken(authentication);
 
@@ -65,34 +67,22 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signupRequest) {
+    public ResponseEntity<?> registerUser(@RequestBody SignupRequest signupRequest) {
         String email = signupRequest.getEmail();
         String password = signupRequest.getPassword();
 
-        if (email == null || email.isBlank()) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Email cannot be blank"));
-        }
-
         String emailRegex = "^[A-Za-z0-9+_.-]+@(.+)$";
-        if (!email.matches(emailRegex)) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Email format is invalid"));
+        if (email == null || email.isBlank() || !email.matches(emailRegex) ||
+                password == null || password.length() < 8 ||
+                !password.matches(".*[A-Z].*") ||
+                !password.matches(".*\\d.*") ||
+                !password.matches(".*[!@#$%^&*()].*")) {
+
+            return ResponseEntity.badRequest().body(new ErrorResponse("Invalid input"));
         }
 
         if (userRepository.existsByEmail(email)) {
-            return ResponseEntity.status(409).body(new MessageResponse("Email already in use"));
-        }
-
-        if (password == null || password.length() < 8) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Password must be at least 8 characters long"));
-        }
-        if (!password.matches(".*[A-Z].*")) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Password must contain at least one uppercase letter"));
-        }
-        if (!password.matches(".*\\d.*")) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Password must contain at least one number"));
-        }
-        if (!password.matches(".*[!@#$%^&*()].*")) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Password must contain at least one special character"));
+            return ResponseEntity.status(409).body(new ErrorResponse("Email already in use"));
         }
 
         User user = new User(email, encoder.encode(password));
@@ -100,9 +90,34 @@ public class AuthController {
             user.setCohort(signupRequest.getCohort());
         }
 
-        Role studentRole = roleRepository.findByName(ERole.ROLE_STUDENT)
-                .orElseThrow(() -> new RuntimeException("Error: Role not found"));
-        user.getRoles().add(studentRole);
+        Set<String> strRoles = signupRequest.getRole();
+        Set<Role> roles = new HashSet<>();
+
+        if (strRoles == null) {
+            Role studentRole = roleRepository.findByName(ERole.ROLE_STUDENT)
+                    .orElseThrow(() -> new RuntimeException("Error: Role not found"));
+            roles.add(studentRole);
+        } else {
+            strRoles.forEach(role -> {
+                switch (role.toLowerCase()) {
+                    case "admin":
+                        Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
+                                .orElseThrow(() -> new RuntimeException("Error: Role not found"));
+                        roles.add(adminRole);
+                        break;
+                    case "teacher":
+                        Role teacherRole = roleRepository.findByName(ERole.ROLE_TEACHER)
+                                .orElseThrow(() -> new RuntimeException("Error: Role not found"));
+                        roles.add(teacherRole);
+                        break;
+                    default:
+                        Role studentRole = roleRepository.findByName(ERole.ROLE_STUDENT)
+                                .orElseThrow(() -> new RuntimeException("Error: Role not found"));
+                        roles.add(studentRole);
+                }
+            });
+        }
+        user.setRoles(roles);
 
         userRepository.save(user);
 

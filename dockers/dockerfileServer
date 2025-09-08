@@ -11,9 +11,9 @@ RUN chmod +x gradlew
 RUN ./gradlew build
 
 FROM mcr.microsoft.com/openjdk/jdk:21-ubuntu
-COPY --from=build java-team-dev-server-2508-team-2/build/libs/ .
+COPY --from=build java-team-dev-server-2508-team-2/build/libs/*.jar server.jar
 
 
 EXPOSE 4000
 
-ENTRYPOINT [ "java", "-jar", "server.jar" ]
+# ENTRYPOINT [ "java", "-jar", "server.jar" ]

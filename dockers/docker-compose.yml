@@ -26,8 +26,9 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRATION_MS: 86400000
+      BOOLEANUK_APP_JWTSECRET: ${JWT_SECRET}
+      BOOLEANUK_APP_JWTEXPIRATIONMS: 86400000
+    command: ["java", "-jar", "server.jar"]
     depends_on:
       - postgres
     
@@ -40,7 +41,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      REACT_APP_API_URL: http://my-spring-app:4000
+      REACT_APP_API_URL: http://localhost:4000
     command: ["npm", "start"]
     depends_on:
       - postgres

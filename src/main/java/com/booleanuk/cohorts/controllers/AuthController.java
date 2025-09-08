@@ -5,6 +5,7 @@ import com.booleanuk.cohorts.models.Role;
 import com.booleanuk.cohorts.models.User;
 import com.booleanuk.cohorts.payload.request.LoginRequest;
 import com.booleanuk.cohorts.payload.request.SignupRequest;
+import com.booleanuk.cohorts.payload.response.ErrorResponse;
 import com.booleanuk.cohorts.payload.response.JwtResponse;
 import com.booleanuk.cohorts.payload.response.MessageResponse;
 import com.booleanuk.cohorts.payload.response.TokenResponse;
@@ -50,7 +51,8 @@ public class AuthController {
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         // If using a salt for password use it here
         Authentication authentication = authenticationManager
-                .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+                .authenticate(
+                        new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtUtils.generateJwtToken(authentication);
 
@@ -65,41 +67,61 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signupRequest) {
-        if (userRepository.existsByEmail(signupRequest.getEmail())) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: Email is already in use!"));
+    public ResponseEntity<?> registerUser(@RequestBody SignupRequest signupRequest) {
+        String email = signupRequest.getEmail();
+        String password = signupRequest.getPassword();
+
+        String emailRegex = "^[A-Za-z0-9+_.-]+@(.+)$";
+        if (email == null || email.isBlank() || !email.matches(emailRegex) ||
+                password == null || password.length() < 8 ||
+                !password.matches(".*[A-Z].*") ||
+                !password.matches(".*\\d.*") ||
+                !password.matches(".*[!@#$%^&*()].*")) {
+
+            return ResponseEntity.badRequest().body(new ErrorResponse("Invalid input"));
         }
-        // Create a new user add salt here if using one
-        User user = new User(signupRequest.getEmail(), encoder.encode(signupRequest.getPassword()));
+
+        if (userRepository.existsByEmail(email)) {
+            return ResponseEntity.status(409).body(new ErrorResponse("Email already in use"));
+        }
+
+        User user = new User(email, encoder.encode(password));
         if (signupRequest.getCohort() != null) {
             user.setCohort(signupRequest.getCohort());
         }
+
         Set<String> strRoles = signupRequest.getRole();
         Set<Role> roles = new HashSet<>();
 
         if (strRoles == null) {
-            Role studentRole = roleRepository.findByName(ERole.ROLE_STUDENT).orElseThrow(() -> new RuntimeException("Error: Role is not found"));
+            Role studentRole = roleRepository.findByName(ERole.ROLE_STUDENT)
+                    .orElseThrow(() -> new RuntimeException("Error: Role not found"));
             roles.add(studentRole);
         } else {
-            strRoles.forEach((role) -> {
-                switch (role) {
+            strRoles.forEach(role -> {
+                switch (role.toLowerCase()) {
                     case "admin":
-                        Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN).orElseThrow(() -> new RuntimeException("Error: Role is not found"));
+                        Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
+                                .orElseThrow(() -> new RuntimeException("Error: Role not found"));
                         roles.add(adminRole);
                         break;
                     case "teacher":
-                        Role teacherRole = roleRepository.findByName(ERole.ROLE_TEACHER).orElseThrow(() -> new RuntimeException("Error: Role is not found"));
+                        Role teacherRole = roleRepository.findByName(ERole.ROLE_TEACHER)
+                                .orElseThrow(() -> new RuntimeException("Error: Role not found"));
                         roles.add(teacherRole);
                         break;
                     default:
-                        Role studentRole = roleRepository.findByName(ERole.ROLE_STUDENT).orElseThrow(() -> new RuntimeException("Error: Role is not found"));
+                        Role studentRole = roleRepository.findByName(ERole.ROLE_STUDENT)
+                                .orElseThrow(() -> new RuntimeException("Error: Role not found"));
                         roles.add(studentRole);
-                        break;
                 }
             });
         }
         user.setRoles(roles);
+
         userRepository.save(user);
-        return ResponseEntity.ok((new MessageResponse("User registered successfully")));
+
+        return ResponseEntity.status(201).body(new MessageResponse("User registered successfully"));
     }
+
 }

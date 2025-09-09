@@ -38,7 +38,7 @@ public class CohortController {
         Cohort cohort = this.cohortRepository.findById(id).orElse(null);
         if (cohort == null) {
             ErrorResponse error = new ErrorResponse();
-            error.set("not found");
+            error.set("cohort with the given id not found");
             return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
         }
         CohortResponse cohortResponse = new CohortResponse();

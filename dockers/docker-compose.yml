@@ -1,0 +1,51 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: postgres_docker
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - db-data:/etc/data
+
+
+  spring-app:
+    build: 
+      dockerfile: dockerfileServer
+      args:
+        BRANCH: "${SERVERBRANCH:-main}"
+    container_name: my-spring-app
+    ports:
+      - "4000:4000"
+    environment:
+      SERVER_PORT: 4000
+      SERVER_ADDRESS: 0.0.0.0
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      BOOLEANUK_APP_JWTSECRET: ${JWT_SECRET}
+      BOOLEANUK_APP_JWTEXPIRATIONMS: 86400000
+    command: ["java", "-jar", "server.jar"]
+    depends_on:
+      - postgres
+    
+  react:
+    build:
+      dockerfile: dockerfileClient
+      args:
+        BRANCH: "${CLIENTBRANCH:-main}"
+    container_name: react-client
+    ports:
+      - "3000:3000"
+    environment:
+      REACT_APP_API_URL: http://localhost:4000
+    command: ["npm", "start"]
+    depends_on:
+      - postgres
+      - spring-app
+
+volumes:
+  db-data:

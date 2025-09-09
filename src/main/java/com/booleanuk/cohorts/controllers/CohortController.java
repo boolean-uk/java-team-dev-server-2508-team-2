@@ -49,7 +49,7 @@ public class CohortController {
     @GetMapping("{id}/students")
     @JsonView(Views.basicProfileInfo.class)
     public ResponseEntity<Response> getStudentsByCohortId(@PathVariable int id) {
-        System.out.println("hit end point");
+
         Cohort cohort = this.cohortRepository.findById(id).orElse(null);
         if (cohort == null) {
             ErrorResponse error = new ErrorResponse();

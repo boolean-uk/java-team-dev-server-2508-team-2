@@ -20,6 +20,12 @@ The Client code should allow you to login and display the initial dashboard in a
 
 Once you are fully up to speed and working on the project it is perfectly acceptable to change the structure of this code in any way that you see fit (as long as you adhere to whatever process your team has in place). There are sections in the code which need to be refactored (take a look at the `payload/response` package for one example), there are classes which are only there to replicate the functionality of the original Node version (the `Author` class is one example) and there are hard coded responses which need removing. 
 
+## Docker compose
+
+In the dockers folder, there is a docker compose file.
+You need to fill in the .env file for it to work, but then you only need to do `docker compose up` to run the project.
+In the .env file you can also select what branch you want to run, you can comment this out if you want to run the main branch.
+
 ## Enjoy!
 
 Once you have your teams set up, enjoy working on the code.

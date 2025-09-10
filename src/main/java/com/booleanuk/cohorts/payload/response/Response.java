@@ -12,6 +12,7 @@ public class Response {
     protected Data<?> data;
 
     public void set(Data<?> data) {
+        this.status = "success";
         this.data = data;
     }
 }

@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import static com.booleanuk.cohorts.models.ERole.ROLE_STUDENT;
+import static com.booleanuk.cohorts.models.ERole.ROLE_TEACHER;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -62,6 +63,22 @@ public class CohortController {
                         &&
                         (p.getUser().getRoles()
                         .stream().anyMatch((r) -> r.getName().equals(ROLE_STUDENT)))
+        ).toList();
+
+
+        ProfileListResponse profileListResponse = new ProfileListResponse();
+        profileListResponse.set(students);
+        return ResponseEntity.ok(profileListResponse);
+    }
+
+    @GetMapping("/teachers")
+    @JsonView(Views.basicProfileInfo.class)
+    public ResponseEntity<Response> getTeachers() {
+
+        var profiles = profileRepository.findAll();
+        var students = profiles.stream().filter((p) ->
+                        (p.getUser().getRoles()
+                                .stream().anyMatch((r) -> r.getName().equals(ROLE_TEACHER)))
         ).toList();
 
 

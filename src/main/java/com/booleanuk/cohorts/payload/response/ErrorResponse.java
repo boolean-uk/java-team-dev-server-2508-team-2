@@ -7,16 +7,18 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ErrorResponse extends Response {
     public ErrorResponse(String message) {
-        this.status = "error";
         Data<String> data = new ErrorData();
         data.set(message);
         super.set(data);
+        this.status = "error";
+
     }
 
     public void set(String message) {
-        this.status = "error";
         Data<String> data = new ErrorData();
         data.set(message);
         super.set(data);
+        this.status = "error";
+
     }
 }

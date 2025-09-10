@@ -69,7 +69,7 @@ public class Main implements CommandLineRunner {
         }
         Profile studentProfile;
         if (!this.profileRepository.existsById(1)) {
-            studentProfile = this.profileRepository.save(new Profile(studentUser, "Joe", "Bloggs", "Hello world!", "student1"));
+            studentProfile = this.profileRepository.save(new Profile(studentUser, "Joe", "Bloggs","joe11", "+31612345678", "Hello world!", "student1"));
         } else {
             studentProfile = this.profileRepository.findById(1).orElse(null);
         }
@@ -84,7 +84,7 @@ public class Main implements CommandLineRunner {
         }
         Profile teacherProfile;
         if (!this.profileRepository.existsById(2)) {
-            teacherProfile = this.profileRepository.save(new Profile(teacherUser, "Rick", "Sanchez", "Hello there!", "teacher1"));
+            teacherProfile = this.profileRepository.save(new Profile(teacherUser, "Rick", "Sanchez","Rick10","+31612345687", "Hello there!", "teacher1"));
         } else {
             teacherProfile = this.profileRepository.findById(2).orElse(null);
         }

@@ -33,6 +33,8 @@ public class ProfileController {
 
         if (profileRequest.getFirstName() != null) profile.setFirstName(profileRequest.getFirstName());
         if (profileRequest.getLastName() != null) profile.setLastName(profileRequest.getLastName());
+        if (profileRequest.getUsername() != null) profile.setUsername(profileRequest.getUsername());
+        if (profileRequest.getPhone() != null) profile.setPhone(profileRequest.getPhone());
         if (profileRequest.getBio() != null) profile.setBio(profileRequest.getBio());
         if (profileRequest.getGithubUrl() != null) profile.setGithubUrl(profileRequest.getGithubUrl());
 

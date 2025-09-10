@@ -31,6 +31,12 @@ public class Profile {
     private String lastName;
 
     @Column
+    private String username;
+
+    @Column
+    private String phone;
+
+    @Column(length = 300)
     private String bio;
 
     @Column
@@ -40,10 +46,12 @@ public class Profile {
         this.id = id;
     }
 
-    public Profile(User user, String firstName, String lastName, String bio, String githubUrl) {
+    public Profile(User user, String firstName, String lastName, String username, String phone, String bio, String githubUrl) {
         this.user = user;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.username = username;
+        this.phone = phone;
         this.bio = bio;
         this.githubUrl = githubUrl;
     }

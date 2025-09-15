@@ -50,3 +50,19 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+// jar {
+//     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+//     manifest {
+//         attributes 'Main-Class': 'com.booleanuk.api.Main'
+//     }
+//     archiveFileName.set('server.jar')
+
+//     from {
+//         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+//     }
+// }
+
+bootJar {
+	archiveFileName.set('server.jar')
+}

@@ -62,7 +62,9 @@ public class WebSecurityConfig {
                         .requestMatchers("/posts", "/posts/**").authenticated()
                         .requestMatchers("/cohorts", "/cohorts/**").authenticated()
                         .requestMatchers("/logs", "/logs/**").authenticated()
+                        .requestMatchers("/specialisations", "/specialisations/**").authenticated()
                         .requestMatchers("/").authenticated()
+                        .requestMatchers("/v3/*").permitAll()
                 );
         http.authenticationProvider(authenticationProvider());
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);

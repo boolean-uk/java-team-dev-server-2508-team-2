@@ -25,8 +25,6 @@ public class ProfileController {
 
     @PatchMapping("/{userId}/profile")
     public ResponseEntity<?> registerProfile(@PathVariable int userId, @RequestBody profileRequest profileRequest) {
-        System.out.println(profileRequest);
-
         User user = userRepository.findById(userId).orElse(null);
         if (user == null) {
             return ResponseEntity.status(404).body(new ErrorResponse("User not found"));

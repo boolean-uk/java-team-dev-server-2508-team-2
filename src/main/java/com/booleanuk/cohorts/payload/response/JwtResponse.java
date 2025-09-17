@@ -16,6 +16,6 @@ public class JwtResponse {
 
     public JwtResponse(String token, User user) {
         this.token = token;
-
+        this.user = user;
     }
 }

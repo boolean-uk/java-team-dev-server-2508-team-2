@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/users")
 public class ProfileController {
@@ -20,9 +21,10 @@ public class ProfileController {
     @Autowired
     private ProfileRepository profileRepository;
 
-    @PatchMapping("/{userId}/profile")
-    public ResponseEntity<?> registerProfile(@PathVariable int userId, @RequestBody Profile profileRequest) {
+    private record profileRequest(String firstName, String lastName, String phone, String githubUrl, String bio){}
 
+    @PatchMapping("/{userId}/profile")
+    public ResponseEntity<?> registerProfile(@PathVariable int userId, @RequestBody profileRequest profileRequest) {
         User user = userRepository.findById(userId).orElse(null);
         if (user == null) {
             return ResponseEntity.status(404).body(new ErrorResponse("User not found"));
@@ -31,12 +33,11 @@ public class ProfileController {
         Profile profile = profileRepository.findByUser(user).orElse(new Profile());
         profile.setUser(user);
 
-        if (profileRequest.getFirstName() != null) profile.setFirstName(profileRequest.getFirstName());
-        if (profileRequest.getLastName() != null) profile.setLastName(profileRequest.getLastName());
-        if (profileRequest.getUsername() != null) profile.setUsername(profileRequest.getUsername());
-        if (profileRequest.getPhone() != null) profile.setPhone(profileRequest.getPhone());
-        if (profileRequest.getBio() != null) profile.setBio(profileRequest.getBio());
-        if (profileRequest.getGithubUrl() != null) profile.setGithubUrl(profileRequest.getGithubUrl());
+        if (profileRequest.firstName() != null) profile.setFirstName(profileRequest.firstName());
+        if (profileRequest.lastName() != null) profile.setLastName(profileRequest.lastName());
+        if (profileRequest.phone() != null) profile.setPhone(profileRequest.phone());
+        if (profileRequest.bio() != null) profile.setBio(profileRequest.bio());
+        if (profileRequest.githubUrl() != null) profile.setGithubUrl(profileRequest.githubUrl());
 
         profileRepository.save(profile);
 

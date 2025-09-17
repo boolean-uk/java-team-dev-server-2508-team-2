@@ -24,6 +24,8 @@ public class Main implements CommandLineRunner {
     @Autowired
     private PostRepository postRepository;
     @Autowired
+    private SpecialisationRepository specialisationRepository;
+    @Autowired
     PasswordEncoder encoder;
 
     public static void main(String[] args) {
@@ -51,42 +53,56 @@ public class Main implements CommandLineRunner {
         if (!this.roleRepository.existsByName(ERole.ROLE_ADMIN)) {
             this.roleRepository.save(new Role(ERole.ROLE_ADMIN));
         }
+        // Create some specialisations
+        Specialisation specialisation;
+        if (!this.specialisationRepository.existsById(1)) {
+            specialisation = this.specialisationRepository.save(new Specialisation("Software Development"));
+        } else {
+            specialisation = this.specialisationRepository.findById(1).orElse(null);
+        }
+        if (!this.specialisationRepository.existsById(2)) {
+            specialisationRepository.save(new Specialisation("Front-end Development"));
+        }
+        if (!this.specialisationRepository.existsById(3)) {
+            specialisationRepository.save(new Specialisation("Data Analytics"));
+        }
         // Create a cohort.
         Cohort cohort;
         if (!this.cohortRepository.existsById(1)) {
-             cohort = this.cohortRepository.save(new Cohort());
+             cohort = this.cohortRepository.save(new Cohort(specialisation));
         } else {
             cohort = this.cohortRepository.findById(1).orElse(null);
         }
         // Create some users
         User studentUser;
-        if (!this.userRepository.existsById(1)) {
+        if (!this.userRepository.existsByEmail("student@test.com")) {
             studentUser = new User("student@test.com", this.encoder.encode("Testpassword1!"), cohort);
             studentUser.setRoles(studentRoles);
             studentUser = this.userRepository.save(studentUser);
         } else {
-            studentUser = this.userRepository.findById(1).orElse(null);
+            studentUser = this.userRepository.findByEmail("student@test.com").orElse(null);
         }
         Profile studentProfile;
-        if (!this.profileRepository.existsById(1)) {
+        if (!this.profileRepository.existsByUser(studentUser)) {
             studentProfile = this.profileRepository.save(new Profile(studentUser, "Joe", "Bloggs", "+31612345678", "Hello world!", "student1"));
         } else {
-            studentProfile = this.profileRepository.findById(1).orElse(null);
+            studentProfile = this.profileRepository.findByUser(studentUser).orElse(null);
         }
 
         User teacherUser;
-        if (!this.userRepository.existsById(2)) {
+        if (!this.userRepository.existsByEmail("dave@email.com")) {
             teacherUser = new User("dave@email.com", this.encoder.encode("password"));
             teacherUser.setRoles(teacherRoles);
+            teacherUser.setSpecialisation(specialisation);
             teacherUser = this.userRepository.save(teacherUser);
         } else {
-            teacherUser = this.userRepository.findById(2).orElse(null);
+            teacherUser = this.userRepository.findByEmail("dave@email.com").orElse(null);
         }
         Profile teacherProfile;
-        if (!this.profileRepository.existsById(2)) {
+        if (!this.profileRepository.existsByUser(teacherUser)) {
             teacherProfile = this.profileRepository.save(new Profile(teacherUser, "Rick", "Sanchez","+31612345687", "Hello there!", "teacher1"));
         } else {
-            teacherProfile = this.profileRepository.findById(2).orElse(null);
+            teacherProfile = this.profileRepository.findByUser(teacherUser).orElse(null);
         }
 
         if (!this.postRepository.existsById(1)) {

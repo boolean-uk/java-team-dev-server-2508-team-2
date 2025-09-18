@@ -22,7 +22,7 @@ public class Specialisation {
     private String name;
 
     @OneToMany(mappedBy = "specialisation")
-    @JsonIncludeProperties({"id"})
+    @JsonIgnoreProperties("specialisation")
     private List<User> teachers;
 
     @OneToMany(mappedBy = "specialisation")

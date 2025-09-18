@@ -1,18 +1,19 @@
 package com.booleanuk.cohorts.controllers;
 
-import com.booleanuk.cohorts.models.Cohort;
-import com.booleanuk.cohorts.models.ERole;
-import com.booleanuk.cohorts.models.Profile;
-import com.booleanuk.cohorts.models.Role;
+import com.booleanuk.cohorts.models.*;
 import com.booleanuk.cohorts.payload.response.*;
 import com.booleanuk.cohorts.repository.CohortRepository;
 import com.booleanuk.cohorts.repository.ProfileRepository;
+import com.booleanuk.cohorts.repository.SpecialisationRepository;
 import com.booleanuk.cohorts.views.Views;
 import com.fasterxml.jackson.annotation.JsonView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
 
 import static com.booleanuk.cohorts.models.ERole.ROLE_STUDENT;
 import static com.booleanuk.cohorts.models.ERole.ROLE_TEACHER;
@@ -26,6 +27,9 @@ public class CohortController {
 
     @Autowired
     private ProfileRepository profileRepository;
+
+    @Autowired
+    private SpecialisationRepository specialisationRepository;
 
     @GetMapping
     public ResponseEntity<CohortListResponse> getAllCohorts() {
@@ -85,5 +89,53 @@ public class CohortController {
         ProfileListResponse profileListResponse = new ProfileListResponse();
         profileListResponse.set(students);
         return ResponseEntity.ok(profileListResponse);
+    }
+
+    private record CohortRequest(String name, int specialisationId, java.util.Date startDate, java.util.Date endDate) {}
+
+    @PostMapping
+    public ResponseEntity<Cohort> create(@RequestBody CohortRequest request) {
+        Specialisation specialisation = specialisationRepository.findById(request.specialisationId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Could not find specialisation with that id."));
+
+        Cohort cohort = new Cohort();
+        cohort.setName(request.name());
+        cohort.setSpecialisation(specialisation);
+        cohort.setStartDate(request.startDate());
+        cohort.setEndDate(request.endDate());
+
+        Cohort savedCohort = cohortRepository.save(cohort);
+
+        return new ResponseEntity<>(savedCohort, HttpStatus.CREATED);
+    }
+
+    @PutMapping("{id}")
+    public ResponseEntity<Cohort> updateCohort(@PathVariable int id, @RequestBody CohortRequest request) {
+        Cohort cohortToUpdate = cohortRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Could not find cohort with that id."));
+
+        Specialisation specialisation = specialisationRepository.findById(request.specialisationId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Could not find specialisation with that id."));
+
+        cohortToUpdate.setName(request.name());
+        cohortToUpdate.setSpecialisation(specialisation);
+        cohortToUpdate.setStartDate(request.startDate());
+        cohortToUpdate.setEndDate(request.endDate());
+
+        Cohort updatedCohort = cohortRepository.save(cohortToUpdate);
+
+        return new ResponseEntity<>(updatedCohort, HttpStatus.OK);
+    }
+
+
+    @DeleteMapping("{id}")
+    public ResponseEntity<Cohort> delete(@PathVariable int id) {
+        Cohort cohortToDelete = this.cohortRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Could not find cohort with that id."));
+        for (User student: cohortToDelete.getStudents()){
+            student.setCohort(null);
+        }
+        this.cohortRepository.delete(cohortToDelete);
+        return ResponseEntity.ok(cohortToDelete);
     }
 }

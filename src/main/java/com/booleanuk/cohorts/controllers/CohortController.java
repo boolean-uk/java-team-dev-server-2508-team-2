@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static com.booleanuk.cohorts.models.ERole.ROLE_STUDENT;
@@ -91,7 +92,7 @@ public class CohortController {
         return ResponseEntity.ok(profileListResponse);
     }
 
-    private record CohortRequest(String name, int specialisationId, java.util.Date startDate, java.util.Date endDate) {}
+    private record CohortRequest(String name, int specialisationId, LocalDate startDate, LocalDate endDate) {}
 
     @PostMapping
     public ResponseEntity<Cohort> create(@RequestBody CohortRequest request) {

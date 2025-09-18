@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 
 @NoArgsConstructor
@@ -21,11 +23,11 @@ public class Cohort {
 
     @Column
     @Temporal(TemporalType.DATE)
-    private java.util.Date startDate;
+    private LocalDate startDate;
 
     @Column
     @Temporal(TemporalType.DATE)
-    private java.util.Date endDate;
+    private LocalDate endDate;
 
     @ManyToOne
     @JoinColumn(name = "specialisation_id", nullable = false)
@@ -40,7 +42,10 @@ public class Cohort {
         this.id = id;
     }
 
-    public Cohort(Specialisation specialisation) {
+    public Cohort(String name, LocalDate startDate, LocalDate endDate, Specialisation specialisation) {
+        this.name = name;
+        this.startDate = startDate;
+        this.endDate = endDate;
         this.specialisation = specialisation;
     }
 }

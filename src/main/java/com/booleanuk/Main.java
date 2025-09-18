@@ -8,7 +8,12 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 
 @SpringBootApplication
@@ -69,7 +74,8 @@ public class Main implements CommandLineRunner {
         // Create a cohort.
         Cohort cohort;
         if (!this.cohortRepository.existsById(1)) {
-             cohort = this.cohortRepository.save(new Cohort(specialisation));
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+            cohort = this.cohortRepository.save(new Cohort("Cohort 2", LocalDate.parse("04-08-2025", formatter) , LocalDate.parse("22-12-2025", formatter) ,specialisation));
         } else {
             cohort = this.cohortRepository.findById(1).orElse(null);
         }

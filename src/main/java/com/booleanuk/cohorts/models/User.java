@@ -7,13 +7,17 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.HashSet;
 import java.util.Set;
 
+import static com.booleanuk.cohorts.models.ERole.ROLE_STUDENT;
+
 @NoArgsConstructor
 @Data
 @Entity
+@Setter
 @Table(name = "users",
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = "email")
@@ -54,5 +58,9 @@ public class User {
         this.email = email;
         this.password = password;
         this.cohort = cohort;
+    }
+
+    public boolean isStudent(){
+        return roles.stream().anyMatch(r -> r.getName().equals(ROLE_STUDENT));
     }
 }

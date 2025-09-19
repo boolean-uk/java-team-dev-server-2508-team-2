@@ -1,11 +1,13 @@
 package com.booleanuk.cohorts.security;
 
+import com.booleanuk.cohorts.models.ERole;
 import com.booleanuk.cohorts.security.jwt.AuthEntryPointJwt;
 import com.booleanuk.cohorts.security.jwt.AuthTokenFilter;
 import com.booleanuk.cohorts.security.services.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -62,6 +64,9 @@ public class WebSecurityConfig {
                         .requestMatchers("/notes/*").hasRole("TEACHER")
                         .requestMatchers("/users", "/users/**").authenticated()
                         .requestMatchers("/posts", "/posts/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE,"/cohorts", "/cohorts/**").hasRole("TEACHER")
+                        .requestMatchers(HttpMethod.PUT, "/cohorts", "/cohorts/**").hasRole("TEACHER")
+                        .requestMatchers(HttpMethod.POST, "/cohorts", "/cohorts/**").hasRole("TEACHER")
                         .requestMatchers("/cohorts", "/cohorts/**").authenticated()
                         .requestMatchers("/logs", "/logs/**").authenticated()
                         .requestMatchers("/specialisations", "/specialisations/**").authenticated()

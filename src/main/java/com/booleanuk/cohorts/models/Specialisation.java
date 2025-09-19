@@ -26,7 +26,7 @@ public class Specialisation {
     private List<User> teachers;
 
     @OneToMany(mappedBy = "specialisation")
-    @JsonIncludeProperties({"id"})
+    @JsonIncludeProperties({"id", "name"})
     private List<Cohort> cohorts;
 
     public Specialisation(String name) {

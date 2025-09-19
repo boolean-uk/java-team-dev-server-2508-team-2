@@ -96,8 +96,10 @@ public class CohortController {
 
     @PostMapping
     public ResponseEntity<Response> create(@RequestBody CohortRequest request) {
-        Specialisation specialisation = specialisationRepository.findById(request.specialisationId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Could not find specialisation with that id."));
+        Specialisation specialisation = specialisationRepository.findById(request.specialisationId()).orElse(null);
+        if (specialisation == null) {
+            return ResponseEntity.status(404).body(new ErrorResponse("Could not find specialisation with that id"));
+        }
 
         Cohort cohort = new Cohort();
         cohort.setName(request.name());
@@ -114,11 +116,15 @@ public class CohortController {
 
     @PutMapping("{id}")
     public ResponseEntity<Response> updateCohort(@PathVariable int id, @RequestBody CohortRequest request) {
-        Cohort cohortToUpdate = cohortRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Could not find cohort with that id."));
+        Cohort cohortToUpdate = cohortRepository.findById(id).orElse(null);
+        if (cohortToUpdate == null) {
+            return ResponseEntity.status(404).body(new ErrorResponse("Could not find cohort with that id"));
+        }
 
-        Specialisation specialisation = specialisationRepository.findById(request.specialisationId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Could not find specialisation with that id."));
+        Specialisation specialisation = specialisationRepository.findById(request.specialisationId()).orElse(null);
+        if (specialisation == null) {
+            return ResponseEntity.status(404).body(new ErrorResponse("Could not find specialisation with that id"));
+        }
 
         cohortToUpdate.setName(request.name());
         cohortToUpdate.setSpecialisation(specialisation);
@@ -135,8 +141,10 @@ public class CohortController {
 
     @DeleteMapping("{id}")
     public ResponseEntity<Response> delete(@PathVariable int id) {
-        Cohort cohortToDelete = this.cohortRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Could not find cohort with that id."));
+        Cohort cohortToDelete = this.cohortRepository.findById(id).orElse(null);
+        if (cohortToDelete == null) {
+            return ResponseEntity.status(404).body(new ErrorResponse("Could not find cohort with that id"));
+        }
         for (User student: cohortToDelete.getStudents()){
             student.setCohort(null);
         }

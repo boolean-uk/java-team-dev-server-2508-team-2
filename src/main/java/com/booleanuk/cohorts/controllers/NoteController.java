@@ -22,15 +22,14 @@ public class NoteController {
     @Autowired
     NoteRepository noteRepository;
 
+    @Autowired
     UserRepository userRepository;
 
     @GetMapping("users/{userId}/notes")
-    public ResponseEntity<Response> getNotesByUserId(@PathVariable int id) {
-        User student = this.userRepository.findById(id).orElse(null);
+    public ResponseEntity<Response> getNotesByUserId(@PathVariable int userId) {
+        User student = this.userRepository.findById(userId).orElse(null);
         if (student == null) {
-            ErrorResponse error = new ErrorResponse();
-            error.set("student with that id was not found");
-            return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+            return ResponseEntity.status(404).body(new ErrorResponse("Student with that id was not found"));
         }
         var notes = noteRepository.findAllByUser(student);
 
@@ -42,15 +41,10 @@ public class NoteController {
     private record NoteRequest(String title, String text, LocalDate date, LocalTime time) {}
 
     @PostMapping("users/{userId}/notes")
-    public ResponseEntity<Response> createNoteByUserId(@PathVariable int id, @RequestBody NoteRequest noteRequest) {
-        User student = this.userRepository.findById(id).orElse(null);
+    public ResponseEntity<Response> createNoteByUserId(@PathVariable int userId, @RequestBody NoteRequest noteRequest) {
+        User student = this.userRepository.findById(userId).orElse(null);
         if (student == null) {
-            ErrorResponse error = new ErrorResponse();
-            error.set("student with that id was not found");
-            return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
-        }
-        if (student.getRoles().isEmpty() || !student.getRoles().contains(ERole.ROLE_STUDENT)) {
-            return ResponseEntity.status(400).body(new ErrorResponse("User was not a student"));
+            return ResponseEntity.status(404).body(new ErrorResponse("Student with that id was not found"));
         }
 
         Note newNote = new Note();
@@ -71,9 +65,7 @@ public class NoteController {
     public ResponseEntity<Response> updateNote(@PathVariable int noteId, @RequestBody NoteRequest noteRequest) {
         Note noteToUpdate = this.noteRepository.findById(noteId).orElse(null);
         if (noteToUpdate == null) {
-            ErrorResponse error = new ErrorResponse();
-            error.set("Note with that id was not found");
-            return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+            return ResponseEntity.status(404).body(new ErrorResponse("Note with that id was not found"));
         }
 
         noteToUpdate.setTitle(noteRequest.title());

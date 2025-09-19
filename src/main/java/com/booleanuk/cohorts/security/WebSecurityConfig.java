@@ -58,6 +58,8 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests((requests) -> requests
                         .requestMatchers("/login", "/login/**").permitAll()
                         .requestMatchers("/signup", "/signup/**").permitAll()
+                        .requestMatchers("/users/*/notes").hasRole("TEACHER")
+                        .requestMatchers("/notes/*").hasRole("TEACHER")
                         .requestMatchers("/users", "/users/**").authenticated()
                         .requestMatchers("/posts", "/posts/**").authenticated()
                         .requestMatchers("/cohorts", "/cohorts/**").authenticated()

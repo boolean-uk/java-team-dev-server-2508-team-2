@@ -95,7 +95,7 @@ public class CohortController {
     private record CohortRequest(String name, int specialisationId, LocalDate startDate, LocalDate endDate) {}
 
     @PostMapping
-    public ResponseEntity<Cohort> create(@RequestBody CohortRequest request) {
+    public ResponseEntity<Response> create(@RequestBody CohortRequest request) {
         Specialisation specialisation = specialisationRepository.findById(request.specialisationId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Could not find specialisation with that id."));
 
@@ -107,11 +107,13 @@ public class CohortController {
 
         Cohort savedCohort = cohortRepository.save(cohort);
 
-        return new ResponseEntity<>(savedCohort, HttpStatus.CREATED);
+        CohortResponse cohortResponse = new CohortResponse();
+        cohortResponse.set(savedCohort);
+        return new ResponseEntity<>(cohortResponse, HttpStatus.CREATED);
     }
 
     @PutMapping("{id}")
-    public ResponseEntity<Cohort> updateCohort(@PathVariable int id, @RequestBody CohortRequest request) {
+    public ResponseEntity<Response> updateCohort(@PathVariable int id, @RequestBody CohortRequest request) {
         Cohort cohortToUpdate = cohortRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Could not find cohort with that id."));
 
@@ -125,18 +127,22 @@ public class CohortController {
 
         Cohort updatedCohort = cohortRepository.save(cohortToUpdate);
 
-        return new ResponseEntity<>(updatedCohort, HttpStatus.OK);
+        CohortResponse cohortResponse = new CohortResponse();
+        cohortResponse.set(updatedCohort);
+        return ResponseEntity.ok(cohortResponse);
     }
 
 
     @DeleteMapping("{id}")
-    public ResponseEntity<Cohort> delete(@PathVariable int id) {
+    public ResponseEntity<Response> delete(@PathVariable int id) {
         Cohort cohortToDelete = this.cohortRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Could not find cohort with that id."));
         for (User student: cohortToDelete.getStudents()){
             student.setCohort(null);
         }
         this.cohortRepository.delete(cohortToDelete);
-        return ResponseEntity.ok(cohortToDelete);
+        CohortResponse cohortResponse = new CohortResponse();
+        cohortResponse.set(cohortToDelete);
+        return ResponseEntity.ok(cohortResponse);
     }
 }

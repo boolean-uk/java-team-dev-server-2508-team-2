@@ -8,6 +8,7 @@ import com.booleanuk.cohorts.repository.ProfileRepository;
 import com.booleanuk.cohorts.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,10 +29,16 @@ public class ProfileController {
     private record profileRequest(String firstName, String lastName, String phone, String githubUrl, String bio, String email, String password){}
 
     @PatchMapping("/{userId}/profile")
-    public ResponseEntity<?> registerProfile(@PathVariable int userId, @RequestBody profileRequest profileRequest) {
+    public ResponseEntity<?> registerProfile(@PathVariable int userId, @RequestBody profileRequest profileRequest,  Authentication authentication) {
         User user = userRepository.findById(userId).orElse(null);
         if (user == null) {
             return ResponseEntity.status(404).body(new ErrorResponse("User not found"));
+        }
+
+        String loggedInEmail = authentication.getName();
+        User loggedInUser = userRepository.findByEmail(loggedInEmail).orElse(null);
+        if (loggedInUser.getId() != userId) {
+            return ResponseEntity.status(401).body(new ErrorResponse("You cannot update another users profile"));
         }
 
         if (profileRequest.email() != null) {

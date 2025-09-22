@@ -21,9 +21,6 @@ public class UserController {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    PasswordEncoder encoder;
-
     @GetMapping
     public ResponseEntity<Response> getAllUsers() {
         DataResponse<List<User>> userResponse = new DataResponse<>();
@@ -47,39 +44,5 @@ public class UserController {
     @PostMapping
     public void registerUser() {
         System.out.println("Register endpoint hit");
-    }
-
-    private record UserRequest(String email, String password) {}
-
-    @PatchMapping("/{id}")
-    public ResponseEntity<Response> updateUser(@PathVariable int id, @RequestBody UserRequest request) {
-        User userToUpdate = this.userRepository.findById(id).orElse(null);
-        if (userToUpdate == null) {
-            return ResponseEntity.status(404).body(new ErrorResponse("User with that id was not found"));
-        }
-        String email = request.email();
-        String password = request.password();
-        String emailRegex = "^[A-Za-z0-9+_.-]+@(.+)$";
-        if (email == null || email.isBlank() || !email.matches(emailRegex) ||
-                password == null || password.length() < 8 ||
-                !password.matches(".*[A-Z].*") ||
-                !password.matches(".*\\d.*") ||
-                !password.matches(".*[!@#$%^&*()].*")) {
-
-            return ResponseEntity.badRequest().body(new ErrorResponse("Invalid input"));
-        }
-
-        if (!userToUpdate.getEmail().equals(email) && userRepository.existsByEmail(email)) {
-            return ResponseEntity.status(409).body(new ErrorResponse("Email already in use"));
-        }
-
-        userToUpdate.setEmail(email);
-        userToUpdate.setPassword(encoder.encode(password));
-
-        userRepository.save(userToUpdate);
-
-        DataResponse<User> userResponse = new DataResponse<>();
-        userResponse.set(userToUpdate);
-        return ResponseEntity.ok(userResponse);
     }
 }

@@ -12,6 +12,8 @@ import lombok.NoArgsConstructor;
 import java.util.HashSet;
 import java.util.Set;
 
+import static com.booleanuk.cohorts.models.ERole.ROLE_STUDENT;
+
 @NoArgsConstructor
 @Data
 @Entity
@@ -51,6 +53,10 @@ public class User {
     @JsonIncludeProperties({"id", "name"})
     private Specialisation specialisation;
 
+    @OneToMany(mappedBy = "user")
+    @JsonIgnoreProperties("user")
+    private Set<UserExercise> userExercises = new HashSet<>();
+
     public User(String email, String password) {
         this.email = email;
         this.password = password;
@@ -60,5 +66,9 @@ public class User {
         this.email = email;
         this.password = password;
         this.cohort = cohort;
+    }
+
+    public boolean isStudent(){
+        return roles.stream().anyMatch(r -> r.getName().equals(ROLE_STUDENT));
     }
 }

@@ -17,7 +17,6 @@ import static com.booleanuk.cohorts.models.ERole.ROLE_STUDENT;
 @NoArgsConstructor
 @Data
 @Entity
-@Setter
 @Table(name = "users",
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = "email")

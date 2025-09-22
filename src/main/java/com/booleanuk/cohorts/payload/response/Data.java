@@ -6,3 +6,4 @@ import lombok.Getter;
 public abstract class Data<T> {
     public abstract void set(T data);
 }
+

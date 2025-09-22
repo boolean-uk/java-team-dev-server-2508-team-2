@@ -1,5 +1,6 @@
 package com.booleanuk.cohorts.security;
 
+import com.booleanuk.cohorts.models.ERole;
 import com.booleanuk.cohorts.security.jwt.AuthEntryPointJwt;
 import com.booleanuk.cohorts.security.jwt.AuthTokenFilter;
 import com.booleanuk.cohorts.security.services.UserDetailsServiceImpl;
@@ -60,11 +61,18 @@ public class WebSecurityConfig {
                         .requestMatchers("/login", "/login/**").permitAll()
                         .requestMatchers("/signup", "/signup/**").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/users/*/cohort/*").hasRole("TEACHER")
+                        .requestMatchers("/users/*/notes").hasRole("TEACHER")
+                        .requestMatchers("/notes/*").hasRole("TEACHER")
                         .requestMatchers("/users", "/users/**").authenticated()
                         .requestMatchers("/posts", "/posts/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE,"/cohorts", "/cohorts/**").hasRole("TEACHER")
+                        .requestMatchers(HttpMethod.PUT, "/cohorts", "/cohorts/**").hasRole("TEACHER")
+                        .requestMatchers(HttpMethod.POST, "/cohorts", "/cohorts/**").hasRole("TEACHER")
                         .requestMatchers("/cohorts", "/cohorts/**").authenticated()
                         .requestMatchers("/logs", "/logs/**").authenticated()
+                        .requestMatchers("/specialisations", "/specialisations/**").authenticated()
                         .requestMatchers("/").authenticated()
+                        .requestMatchers("/v3/*").permitAll()
                 );
         http.authenticationProvider(authenticationProvider());
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);

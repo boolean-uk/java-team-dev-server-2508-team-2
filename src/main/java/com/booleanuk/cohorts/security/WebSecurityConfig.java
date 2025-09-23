@@ -68,7 +68,7 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/cohorts", "/cohorts/**").hasRole("TEACHER")
                         .requestMatchers(HttpMethod.POST, "/cohorts", "/cohorts/**").hasRole("TEACHER")
                         .requestMatchers("/cohorts", "/cohorts/**").authenticated()
-                        .requestMatchers("/logs", "/logs/**").authenticated()
+                        .requestMatchers("/logs", "/logs/**").hasRole("TEACHER")
                         .requestMatchers("/specialisations", "/specialisations/**").authenticated()
                         .requestMatchers("/").authenticated()
                         .requestMatchers("/v3/*").permitAll()

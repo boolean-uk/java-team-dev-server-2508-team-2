@@ -60,6 +60,7 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests((requests) -> requests
                         .requestMatchers("/login", "/login/**").permitAll()
                         .requestMatchers("/signup", "/signup/**").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/users/*/cohort/*").hasRole("TEACHER")
                         .requestMatchers("/users/*/notes").hasRole("TEACHER")
                         .requestMatchers("/notes/*").hasRole("TEACHER")
                         .requestMatchers("/users", "/users/**").authenticated()
@@ -68,7 +69,7 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/cohorts", "/cohorts/**").hasRole("TEACHER")
                         .requestMatchers(HttpMethod.POST, "/cohorts", "/cohorts/**").hasRole("TEACHER")
                         .requestMatchers("/cohorts", "/cohorts/**").authenticated()
-                        .requestMatchers("/logs", "/logs/**").authenticated()
+                        .requestMatchers("/logs", "/logs/**").hasRole("TEACHER")
                         .requestMatchers("/specialisations", "/specialisations/**").authenticated()
                         .requestMatchers("/").authenticated()
                         .requestMatchers("/v3/*").permitAll()

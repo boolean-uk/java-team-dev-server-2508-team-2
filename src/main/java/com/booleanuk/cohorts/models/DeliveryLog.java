@@ -21,20 +21,24 @@ public class DeliveryLog {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate date;
 
+    @Column
+    boolean edited = false;
+
+    @Column
+    String title;
+
+    @Column
+    String content;
+
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     @JsonIgnoreProperties("delivery_logs")
-    private User user;
+    private User author;
 
     @ManyToOne
     @JoinColumn(name = "cohort_id", nullable = false)
     @JsonIgnoreProperties("delivery_logs")
     private Cohort cohort;
 
-    public DeliveryLog(LocalDate date, User user, Cohort cohort) {
-        this.date = date;
-        this.user = user;
-        this.cohort = cohort;
-    }
 
 }

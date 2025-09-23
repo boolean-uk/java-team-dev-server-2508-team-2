@@ -12,6 +12,8 @@ import lombok.NoArgsConstructor;
 import java.util.HashSet;
 import java.util.Set;
 
+import static com.booleanuk.cohorts.models.ERole.ROLE_TEACHER;
+
 @NoArgsConstructor
 @Data
 @Entity
@@ -60,5 +62,9 @@ public class User {
         this.email = email;
         this.password = password;
         this.cohort = cohort;
+    }
+
+    public boolean isTeacher(){
+        return roles.stream().anyMatch(r -> r.getName().equals(ROLE_TEACHER));
     }
 }

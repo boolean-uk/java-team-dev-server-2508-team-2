@@ -9,6 +9,8 @@ import com.booleanuk.cohorts.payload.response.ErrorResponse;
 import com.booleanuk.cohorts.payload.response.Response;
 import com.booleanuk.cohorts.payload.response.UserListResponse;
 import com.booleanuk.cohorts.payload.response.UserResponse;
+import com.booleanuk.cohorts.validation.UserValidator;
+import com.booleanuk.cohorts.validation.ValidationError;
 import jakarta.validation.constraints.Null;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,6 +28,9 @@ public class UserController {
 
     @Autowired
     private UserExerciseRepository userExerciseRepository;
+
+    @Autowired
+    private UserValidator userValidator;
 
     @GetMapping
     public ResponseEntity<UserListResponse> getAllUsers() {
@@ -51,16 +56,11 @@ public class UserController {
     public ResponseEntity<Response> getExercises(@PathVariable int id) {
         User user = userRepository.findById(id).orElse(null);
 
-        if (user == null) {
-            ErrorResponse error = new ErrorResponse();
-            error.set("User not found");
-            return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
-        }
-
-        if (!user.isStudent()) {
-            ErrorResponse error = new ErrorResponse();
-            error.set("Exercises are only available for students");
-            return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        ValidationError validationError = userValidator.validateExistingStudent(user);
+        if (validationError != null) {
+            ErrorResponse errorResponse = new ErrorResponse();
+            errorResponse.set(validationError.getMessage());
+            return new ResponseEntity<>(errorResponse, validationError.getStatus());
         }
 
         List<UserExercise> userExercises = userExerciseRepository.findAllByUser(user);

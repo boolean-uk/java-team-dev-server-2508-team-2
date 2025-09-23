@@ -1,5 +1,6 @@
 package com.booleanuk.cohorts.controllers;
 
+import com.booleanuk.cohorts.models.Cohort;
 import com.booleanuk.cohorts.models.User;
 import com.booleanuk.cohorts.models.UserExercise;
 import com.booleanuk.cohorts.payload.response.*;
@@ -12,6 +13,8 @@ import com.booleanuk.cohorts.payload.response.UserResponse;
 import com.booleanuk.cohorts.validation.UserValidator;
 import com.booleanuk.cohorts.validation.ValidationError;
 import jakarta.validation.constraints.Null;
+import com.booleanuk.cohorts.repository.CohortRepository;
+import com.booleanuk.cohorts.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +34,9 @@ public class UserController {
 
     @Autowired
     private UserValidator userValidator;
+    
+    @Autowired
+    private CohortRepository cohortRepository;
 
     @GetMapping
     public ResponseEntity<UserListResponse> getAllUsers() {
@@ -75,6 +81,37 @@ public class UserController {
         listResponse.set(userExercises);
 
         return ResponseEntity.ok(listResponse);
+
+    @PutMapping("{id}/cohort/{cohortId}")
+    public ResponseEntity<Response> assignCohortToStudent(@PathVariable int id, @PathVariable int cohortId){
+        User user = this.userRepository.findById(id).orElse(null);
+
+        if(user == null) {
+            ErrorResponse error = new ErrorResponse();
+            error.set("Student not found");
+            return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+        }
+
+        if(!user.isStudent()){
+            ErrorResponse error = new ErrorResponse();
+            error.set("Only student can be assigned to a cohort");
+            return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        }
+
+        Cohort cohort = this.cohortRepository.findById(cohortId).orElse(null);
+
+        if(cohort == null) {
+            ErrorResponse error = new ErrorResponse();
+            error.set("Cohort not found");
+            return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+        }
+
+        user.setCohort(cohort);
+        userRepository.save(user);
+
+        UserResponse userRes = new UserResponse();
+        userRes.set(user);
+        return ResponseEntity.ok(userRes);
     }
 
     @PostMapping

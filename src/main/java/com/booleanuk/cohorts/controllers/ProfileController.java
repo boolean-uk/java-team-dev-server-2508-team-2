@@ -79,8 +79,6 @@ public class ProfileController {
         if (profileRequest.bio() != null) profile.setBio(profileRequest.bio());
         if (profileRequest.githubUrl() != null) profile.setGithubUrl(profileRequest.githubUrl());
 
-        profileRepository.save(profile);
-
         if (!loggedInUser.isTeacher() && (profileRequest.cohortId() != 0 ||
                 profileRequest.specialisationId() != 0 ||
                 profileRequest.roles() != null ||
@@ -95,6 +93,7 @@ public class ProfileController {
             if (profileRequest.jobTitle() != null) profile.setJobTitle(profileRequest.jobTitle());
         }
 
+        profileRepository.save(profile);
         userRepository.save(user);
 
         return ResponseEntity.ok(new MessageResponse("Profile updated successfully"));

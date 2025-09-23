@@ -5,6 +5,9 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.OffsetDateTime;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -23,6 +26,10 @@ public class Post {
     @JoinColumn(name = "user_id", nullable = false)
     @JsonIgnoreProperties("users")
     private User user;
+
+    @CreationTimestamp
+    @Column
+    private OffsetDateTime createdAt;
 
     @Transient
     private Author author;

@@ -14,6 +14,7 @@ import com.booleanuk.cohorts.validation.UserValidator;
 import com.booleanuk.cohorts.validation.ValidationError;
 import jakarta.validation.constraints.Null;
 import com.booleanuk.cohorts.repository.CohortRepository;
+import com.booleanuk.cohorts.payload.response.*;
 import com.booleanuk.cohorts.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -39,10 +40,10 @@ public class UserController {
     private CohortRepository cohortRepository;
 
     @GetMapping
-    public ResponseEntity<UserListResponse> getAllUsers() {
-        UserListResponse userListResponse = new UserListResponse();
-        userListResponse.set(this.userRepository.findAll());
-        return ResponseEntity.ok(userListResponse);
+    public ResponseEntity<Response> getAllUsers() {
+        DataResponse<List<User>> userResponse = new DataResponse<>();
+        userResponse.set(this.userRepository.findAll());
+        return ResponseEntity.ok(userResponse);
     }
 
     @GetMapping("{id}")
@@ -53,7 +54,7 @@ public class UserController {
             error.set("not found");
             return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
         }
-        UserResponse userResponse = new UserResponse();
+        DataResponse<User> userResponse = new DataResponse<>();
         userResponse.set(user);
         return ResponseEntity.ok(userResponse);
     }
@@ -109,9 +110,9 @@ public class UserController {
         user.setCohort(cohort);
         userRepository.save(user);
 
-        UserResponse userRes = new UserResponse();
-        userRes.set(user);
-        return ResponseEntity.ok(userRes);
+        DataResponse<User> userResponse = new DataResponse<>();
+        userResponse.set(user);
+        return ResponseEntity.ok(userResponse);
     }
 
     @PostMapping

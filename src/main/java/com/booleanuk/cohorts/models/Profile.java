@@ -39,6 +39,9 @@ public class Profile {
     @Column
     private String githubUrl;
 
+    @Column
+    private String jobTitle;
+
     public Profile(int id) {
         this.id = id;
     }

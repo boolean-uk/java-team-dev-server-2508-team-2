@@ -3,7 +3,7 @@ package com.booleanuk.cohorts.controllers;
 import com.booleanuk.cohorts.models.Cohort;
 import com.booleanuk.cohorts.models.User;
 import com.booleanuk.cohorts.payload.response.ErrorResponse;
-import com.booleanuk.cohorts.payload.response.Response;
+import com.booleanuk.cohorts.payload.response.*;
 import com.booleanuk.cohorts.repository.CohortRepository;
 import com.booleanuk.cohorts.payload.response.*;
 import com.booleanuk.cohorts.repository.UserRepository;
@@ -26,9 +26,9 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<Response> getAllUsers() {
-        DataResponse<List<User>> userResponse = new DataResponse<>();
-        userResponse.set(this.userRepository.findAll());
-        return ResponseEntity.ok(userResponse);
+        DataResponse<List<User>> userListResponse = new DataResponse<>();
+        userListResponse.set(this.userRepository.findAll());
+        return ResponseEntity.ok(userListResponse);
     }
 
     @GetMapping("{id}")

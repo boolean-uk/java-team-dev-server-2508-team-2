@@ -4,13 +4,15 @@ import com.booleanuk.cohorts.models.Profile;
 import com.booleanuk.cohorts.models.User;
 import com.booleanuk.cohorts.payload.response.ErrorResponse;
 import com.booleanuk.cohorts.payload.response.MessageResponse;
-import com.booleanuk.cohorts.repository.ProfileRepository;
-import com.booleanuk.cohorts.repository.UserRepository;
+import com.booleanuk.cohorts.repository.*;
+import com.booleanuk.cohorts.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Set;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -24,9 +26,12 @@ public class ProfileController {
     private ProfileRepository profileRepository;
 
     @Autowired
+    private UserService userService;
+
+    @Autowired
     PasswordEncoder encoder;
 
-    private record profileRequest(String firstName, String lastName, String phone, String githubUrl, String bio, String email, String password){}
+    private record profileRequest(String firstName, String lastName, String phone, String githubUrl, String bio, String email, String password, Set<String> roles, int cohortId, int specialisationId, String jobTitle){}
 
     @PatchMapping("/{userId}/profile")
     public ResponseEntity<?> registerProfile(@PathVariable int userId, @RequestBody profileRequest profileRequest,  Authentication authentication) {
@@ -37,7 +42,7 @@ public class ProfileController {
 
         String loggedInEmail = authentication.getName();
         User loggedInUser = userRepository.findByEmail(loggedInEmail).orElse(null);
-        if (loggedInUser.getId() != userId) {
+        if (loggedInUser.getId() != userId && !loggedInUser.isTeacher()) {
             return ResponseEntity.status(401).body(new ErrorResponse("You cannot update another users profile"));
         }
 
@@ -52,7 +57,7 @@ public class ProfileController {
             }
             user.setEmail(email);
         }
-        if (profileRequest.password() != null) {
+        if (loggedInUser.getId() == userId && profileRequest.password() != null) {
             String password = profileRequest.password();
             if (password.length() < 8 ||
                     !password.matches(".*[A-Z].*") ||
@@ -61,6 +66,8 @@ public class ProfileController {
                 return ResponseEntity.badRequest().body(new ErrorResponse("Invalid password"));
             }
             user.setPassword(encoder.encode(password));
+        } else if (profileRequest.password() != null) {
+            return ResponseEntity.status(401).body(new ErrorResponse("You cannot update another users password"));
         }
 
         Profile profile = profileRepository.findByUser(user).orElse(new Profile());
@@ -72,7 +79,22 @@ public class ProfileController {
         if (profileRequest.bio() != null) profile.setBio(profileRequest.bio());
         if (profileRequest.githubUrl() != null) profile.setGithubUrl(profileRequest.githubUrl());
 
+        if (!loggedInUser.isTeacher() && (profileRequest.cohortId() != 0 ||
+                profileRequest.specialisationId() != 0 ||
+                profileRequest.roles() != null ||
+                profileRequest.jobTitle() != null)) {
+            return ResponseEntity.status(401).body(new ErrorResponse("You cannot change Training info unless you are a teacher"));
+        }
+
+        if (loggedInUser.isTeacher()) {
+            if (profileRequest.cohortId() != 0) userService.assignUserToCohort(user, profileRequest.cohortId());
+            if (profileRequest.specialisationId() != 0) userService.assignSpecialisation(user, profileRequest.specialisationId());
+            if (profileRequest.roles() != null) userService.assignRolesToUser(user, profileRequest.roles);
+            if (profileRequest.jobTitle() != null) profile.setJobTitle(profileRequest.jobTitle());
+        }
+
         profileRepository.save(profile);
+        userRepository.save(user);
 
         return ResponseEntity.ok(new MessageResponse("Profile updated successfully"));
     }

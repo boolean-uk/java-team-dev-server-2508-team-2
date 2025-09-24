@@ -33,6 +33,12 @@ public class Post {
     @Column
     private OffsetDateTime createdAt;
 
+    @OneToMany(mappedBy = "post")
+    private Set<Like> likes = new HashSet<>();
+
+    @OneToMany(mappedBy = "post")
+    private Set<Comment> comments = new HashSet<>();
+
     @Transient
     private Author author;
 

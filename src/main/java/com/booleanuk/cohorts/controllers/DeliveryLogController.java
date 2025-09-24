@@ -14,8 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -64,10 +63,14 @@ public class DeliveryLogController {
         return ResponseEntity.ok(logListResponse);
     }
 
-    private record DeliveryLogRequest(String title, String content, LocalDate date) {}
+    private record DeliveryLogRequest(String title, String content, LocalDateTime date) {}
 
     @PostMapping("cohorts/{cohortId}")
-    public ResponseEntity<Response> createDeliveryLogByCohortId(@PathVariable int cohortId, @RequestBody DeliveryLogRequest logRequest, Authentication authentication) {
+    public ResponseEntity<Response> createDeliveryLogByCohortId(
+            @PathVariable int cohortId,
+            @RequestBody DeliveryLogRequest logRequest,
+            Authentication authentication
+    ) {
         Cohort cohort = this.cohortRepository.findById(cohortId).orElse(null);
         if (cohort == null) {
             return ResponseEntity.status(404).body(new ErrorResponse("Cohort with that id was not found"));

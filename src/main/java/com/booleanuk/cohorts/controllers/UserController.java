@@ -4,14 +4,15 @@ import com.booleanuk.cohorts.models.Cohort;
 import com.booleanuk.cohorts.models.User;
 import com.booleanuk.cohorts.payload.response.ErrorResponse;
 import com.booleanuk.cohorts.payload.response.Response;
-import com.booleanuk.cohorts.payload.response.UserListResponse;
-import com.booleanuk.cohorts.payload.response.UserResponse;
 import com.booleanuk.cohorts.repository.CohortRepository;
+import com.booleanuk.cohorts.payload.response.*;
 import com.booleanuk.cohorts.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -24,10 +25,10 @@ public class UserController {
     private CohortRepository cohortRepository;
 
     @GetMapping
-    public ResponseEntity<UserListResponse> getAllUsers() {
-        UserListResponse userListResponse = new UserListResponse();
-        userListResponse.set(this.userRepository.findAll());
-        return ResponseEntity.ok(userListResponse);
+    public ResponseEntity<Response> getAllUsers() {
+        DataResponse<List<User>> userResponse = new DataResponse<>();
+        userResponse.set(this.userRepository.findAll());
+        return ResponseEntity.ok(userResponse);
     }
 
     @GetMapping("{id}")
@@ -38,7 +39,7 @@ public class UserController {
             error.set("not found");
             return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
         }
-        UserResponse userResponse = new UserResponse();
+        DataResponse<User> userResponse = new DataResponse<>();
         userResponse.set(user);
         return ResponseEntity.ok(userResponse);
     }
@@ -70,9 +71,9 @@ public class UserController {
         user.setCohort(cohort);
         userRepository.save(user);
 
-        UserResponse userRes = new UserResponse();
-        userRes.set(user);
-        return ResponseEntity.ok(userRes);
+        DataResponse<User> userResponse = new DataResponse<>();
+        userResponse.set(user);
+        return ResponseEntity.ok(userResponse);
     }
 
     @PostMapping

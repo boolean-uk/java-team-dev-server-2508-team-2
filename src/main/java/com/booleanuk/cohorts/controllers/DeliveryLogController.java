@@ -63,10 +63,14 @@ public class DeliveryLogController {
         return ResponseEntity.ok(logListResponse);
     }
 
-    private record DeliveryLogRequest(String title, String content, LocalDateTime dateTime) {}
+    private record DeliveryLogRequest(String title, String content, LocalDateTime date) {}
 
     @PostMapping("cohorts/{cohortId}")
-    public ResponseEntity<Response> createDeliveryLogByCohortId(@PathVariable int cohortId, @RequestBody DeliveryLogRequest logRequest, Authentication authentication) {
+    public ResponseEntity<Response> createDeliveryLogByCohortId(
+            @PathVariable int cohortId,
+            @RequestBody DeliveryLogRequest logRequest,
+            Authentication authentication
+    ) {
         Cohort cohort = this.cohortRepository.findById(cohortId).orElse(null);
         if (cohort == null) {
             return ResponseEntity.status(404).body(new ErrorResponse("Cohort with that id was not found"));
@@ -83,7 +87,7 @@ public class DeliveryLogController {
         newLog.setAuthor(author);
         newLog.setTitle(logRequest.title());
         newLog.setContent(logRequest.content());
-        newLog.setDate(logRequest.dateTime());
+        newLog.setDate(logRequest.date());
 
         logRepository.save(newLog);
 

@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Set;
@@ -30,9 +29,6 @@ public class ProfileController {
 
     @Autowired
     private UserService userService;
-
-    @Autowired
-    PasswordEncoder encoder;
 
     @GetMapping("{userId}/profile")
     public ResponseEntity<Response> getUserById(@PathVariable int userId) {
@@ -63,25 +59,12 @@ public class ProfileController {
         }
 
         if (profileRequest.email() != null) {
-            String email = profileRequest.email();
-            String emailRegex = "^[A-Za-z0-9+_.-]+@(.+)$";
-            if (email.isBlank() || !email.matches(emailRegex)) {
-                return ResponseEntity.badRequest().body(new ErrorResponse("Invalid email"));
-            }
-            if (!user.getEmail().equals(email) && userRepository.existsByEmail(email)) {
-                return ResponseEntity.status(409).body(new ErrorResponse("Email is already in use"));
-            }
-            user.setEmail(email);
+            ResponseEntity<Response> response = userService.setUserEmail(user, profileRequest.email());
+            if (response != null) return response;
         }
         if (loggedInUser.getId() == userId && profileRequest.password() != null) {
-            String password = profileRequest.password();
-            if (password.length() < 8 ||
-                    !password.matches(".*[A-Z].*") ||
-                    !password.matches(".*\\d.*") ||
-                    !password.matches(".*[!@#$%^&*()].*")) {
-                return ResponseEntity.badRequest().body(new ErrorResponse("Invalid password"));
-            }
-            user.setPassword(encoder.encode(password));
+            ResponseEntity<Response> response = userService.setUserPassword(user, profileRequest.password());
+            if (response != null) return response;
         } else if (profileRequest.password() != null) {
             return ResponseEntity.status(401).body(new ErrorResponse("You cannot update another users password"));
         }

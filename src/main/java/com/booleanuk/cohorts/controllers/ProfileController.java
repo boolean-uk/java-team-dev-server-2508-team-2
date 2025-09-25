@@ -2,11 +2,14 @@ package com.booleanuk.cohorts.controllers;
 
 import com.booleanuk.cohorts.models.Profile;
 import com.booleanuk.cohorts.models.User;
+import com.booleanuk.cohorts.payload.response.DataResponse;
 import com.booleanuk.cohorts.payload.response.ErrorResponse;
 import com.booleanuk.cohorts.payload.response.MessageResponse;
+import com.booleanuk.cohorts.payload.response.Response;
 import com.booleanuk.cohorts.repository.*;
 import com.booleanuk.cohorts.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,6 +33,19 @@ public class ProfileController {
 
     @Autowired
     PasswordEncoder encoder;
+
+    @GetMapping("{userId}/profile")
+    public ResponseEntity<Response> getUserById(@PathVariable int userId) {
+        Profile profile = this.profileRepository.findById(userId).orElse(null);
+        if (profile == null) {
+            ErrorResponse error = new ErrorResponse();
+            error.set("not found");
+            return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+        }
+        DataResponse<Profile> profileResponse = new DataResponse<>();
+        profileResponse.set(profile);
+        return ResponseEntity.ok(profileResponse);
+    }
 
     private record profileRequest(String firstName, String lastName, String phone, String githubUrl, String bio, String email, String password, Set<String> roles, int cohortId, int specialisationId, String jobTitle){}
 

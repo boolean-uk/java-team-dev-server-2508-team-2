@@ -43,9 +43,6 @@ public class Post {
     private Set<Comment> comments = new HashSet<>();
 
     @Transient
-    private Author author;
-
-    @Transient
     private String firstName;
 
     @Transient
@@ -95,11 +92,5 @@ public class Post {
         this.user = user;
         this.content = content;
     }
-
-    public Post(Author author, String content) {
-        this.author = author;
-        this.content = content;
-    }
-
 
 }

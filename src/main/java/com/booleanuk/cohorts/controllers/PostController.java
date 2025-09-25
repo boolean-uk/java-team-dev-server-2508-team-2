@@ -4,10 +4,8 @@ import com.booleanuk.cohorts.models.Author;
 import com.booleanuk.cohorts.models.Post;
 import com.booleanuk.cohorts.models.Profile;
 import com.booleanuk.cohorts.models.User;
-import com.booleanuk.cohorts.payload.response.ErrorResponse;
-import com.booleanuk.cohorts.payload.response.PostListResponse;
-import com.booleanuk.cohorts.payload.response.PostResponse;
-import com.booleanuk.cohorts.payload.response.Response;
+import com.booleanuk.cohorts.payload.request.PostRequest;
+import com.booleanuk.cohorts.payload.response.*;
 import com.booleanuk.cohorts.repository.PostRepository;
 import com.booleanuk.cohorts.repository.ProfileRepository;
 import com.booleanuk.cohorts.repository.UserRepository;
@@ -44,5 +42,24 @@ public class PostController {
         ErrorResponse error = new ErrorResponse();
         error.set("not found");
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+    }
+
+    @PostMapping("/{userId}")
+    public ResponseEntity<?> createPost(@PathVariable int userId, @RequestBody PostRequest postRequest){
+        User user = userRepository.findById(userId).orElse(null);
+
+        if (user == null){
+            return ResponseEntity.status(404).body(new ErrorResponse("Could not find user with that id"));
+        }
+        
+        Post post = new Post();
+        post.setUser(user);
+        post.setContent(postRequest.getContent());
+
+        postRepository.save(post);
+
+        PostResponse postResponse = new PostResponse();
+        postResponse.set(post);
+        return new ResponseEntity<>(postResponse, HttpStatus.CREATED);
     }
 }

@@ -1,5 +1,6 @@
 package com.booleanuk.cohorts.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -34,13 +35,55 @@ public class Post {
     private OffsetDateTime createdAt;
 
     @OneToMany(mappedBy = "post")
+    @JsonIgnore
     private Set<Like> likes = new HashSet<>();
 
     @OneToMany(mappedBy = "post")
+    @JsonIgnore
     private Set<Comment> comments = new HashSet<>();
 
     @Transient
     private Author author;
+
+    @Transient
+    private String firstName;
+
+    @Transient
+    private String lastName;
+
+    @Transient
+    public String getFirstName() {
+        if(user != null && user.getProfile() != null){
+            return user.getProfile().getFirstName();
+        }
+        return null;
+    }
+
+    @Transient
+    public String getLastName() {
+        if(user != null && user.getProfile() != null){
+            return user.getProfile().getLastName();
+        }
+        return null;
+    }
+
+    @Transient
+    public String getInitials(){
+        String firstInitial = firstName.substring(0, 1).toUpperCase();
+        String secondInitial = lastName.substring(0, 1).toUpperCase();
+
+        return (firstInitial + secondInitial);
+    }
+
+    @Transient
+    public int getLikesCount() {
+        return this.getLikes() == null ? 0 : this.getLikes().size();
+    }
+
+    @Transient
+    public int getCommentsCount() {
+        return this.getComments() == null ? 0 : this.getComments().size();
+    }
 
     public Post(int id) {
         this.id = id;

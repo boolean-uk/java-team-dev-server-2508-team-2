@@ -1,18 +1,13 @@
 package com.booleanuk.cohorts.controllers;
 
-import com.booleanuk.cohorts.models.ERole;
-import com.booleanuk.cohorts.models.Role;
 import com.booleanuk.cohorts.models.User;
 import com.booleanuk.cohorts.payload.request.LoginRequest;
 import com.booleanuk.cohorts.payload.request.SignupRequest;
-import com.booleanuk.cohorts.payload.response.ErrorResponse;
-import com.booleanuk.cohorts.payload.response.JwtResponse;
-import com.booleanuk.cohorts.payload.response.MessageResponse;
-import com.booleanuk.cohorts.payload.response.TokenResponse;
-import com.booleanuk.cohorts.repository.RoleRepository;
+import com.booleanuk.cohorts.payload.response.*;
 import com.booleanuk.cohorts.repository.UserRepository;
 import com.booleanuk.cohorts.security.jwt.JwtUtils;
 import com.booleanuk.cohorts.security.services.UserDetailsImpl;
+import com.booleanuk.cohorts.services.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -23,9 +18,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashSet;
+
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -39,7 +33,7 @@ public class AuthController {
     UserRepository userRepository;
 
     @Autowired
-    RoleRepository roleRepository;
+    UserService userService;
 
     @Autowired
     PasswordEncoder encoder;
@@ -68,56 +62,19 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@RequestBody SignupRequest signupRequest) {
-        String email = signupRequest.getEmail();
-        String password = signupRequest.getPassword();
+        User user = new User();
 
-        String emailRegex = "^[A-Za-z0-9+_.-]+@(.+)$";
-        if (email == null || email.isBlank() || !email.matches(emailRegex) ||
-                password == null || password.length() < 8 ||
-                !password.matches(".*[A-Z].*") ||
-                !password.matches(".*\\d.*") ||
-                !password.matches(".*[!@#$%^&*()].*")) {
+        ResponseEntity<Response> emailResponse = userService.setUserEmail(user, signupRequest.getEmail());
+        if (emailResponse != null) return emailResponse;
 
-            return ResponseEntity.badRequest().body(new ErrorResponse("Invalid input"));
-        }
+        ResponseEntity<Response> response = userService.setUserPassword(user, signupRequest.getPassword());
+        if (response != null) return response;
 
-        if (userRepository.existsByEmail(email)) {
-            return ResponseEntity.status(409).body(new ErrorResponse("Email already in use"));
-        }
-
-        User user = new User(email, encoder.encode(password));
         if (signupRequest.getCohort() != null) {
             user.setCohort(signupRequest.getCohort());
         }
 
-        Set<String> strRoles = signupRequest.getRole();
-        Set<Role> roles = new HashSet<>();
-
-        if (strRoles == null) {
-            Role studentRole = roleRepository.findByName(ERole.ROLE_STUDENT)
-                    .orElseThrow(() -> new RuntimeException("Error: Role not found"));
-            roles.add(studentRole);
-        } else {
-            strRoles.forEach(role -> {
-                switch (role.toLowerCase()) {
-                    case "admin":
-                        Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
-                                .orElseThrow(() -> new RuntimeException("Error: Role not found"));
-                        roles.add(adminRole);
-                        break;
-                    case "teacher":
-                        Role teacherRole = roleRepository.findByName(ERole.ROLE_TEACHER)
-                                .orElseThrow(() -> new RuntimeException("Error: Role not found"));
-                        roles.add(teacherRole);
-                        break;
-                    default:
-                        Role studentRole = roleRepository.findByName(ERole.ROLE_STUDENT)
-                                .orElseThrow(() -> new RuntimeException("Error: Role not found"));
-                        roles.add(studentRole);
-                }
-            });
-        }
-        user.setRoles(roles);
+        userService.assignRolesToUser(user, signupRequest.getRole());
 
         userRepository.save(user);
 

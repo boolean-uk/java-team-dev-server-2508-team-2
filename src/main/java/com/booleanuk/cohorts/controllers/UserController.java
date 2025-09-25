@@ -1,18 +1,31 @@
 package com.booleanuk.cohorts.controllers;
 
 import com.booleanuk.cohorts.models.Cohort;
+import com.booleanuk.cohorts.models.Profile;
 import com.booleanuk.cohorts.models.User;
+import com.booleanuk.cohorts.models.UserExercise;
+import com.booleanuk.cohorts.payload.response.*;
+import com.booleanuk.cohorts.repository.UserExerciseRepository;
+import com.booleanuk.cohorts.repository.UserRepository;
 import com.booleanuk.cohorts.payload.response.ErrorResponse;
 import com.booleanuk.cohorts.payload.response.Response;
+import com.booleanuk.cohorts.validation.UserValidator;
+import com.booleanuk.cohorts.validation.ValidationError;
+import jakarta.validation.constraints.Null;
+import com.booleanuk.cohorts.payload.response.*;
+import com.booleanuk.cohorts.payload.response.*;
 import com.booleanuk.cohorts.repository.CohortRepository;
 import com.booleanuk.cohorts.payload.response.*;
+import com.booleanuk.cohorts.repository.ProfileRepository;
 import com.booleanuk.cohorts.repository.UserRepository;
+import com.booleanuk.cohorts.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -22,13 +35,25 @@ public class UserController {
     private UserRepository userRepository;
 
     @Autowired
+    private UserExerciseRepository userExerciseRepository;
+
+    @Autowired
+    private UserValidator userValidator;
+
+    @Autowired
     private CohortRepository cohortRepository;
+
+    @Autowired
+    private ProfileRepository profileRepository;
+
+    @Autowired
+    private UserService userService;
 
     @GetMapping
     public ResponseEntity<Response> getAllUsers() {
-        DataResponse<List<User>> userResponse = new DataResponse<>();
-        userResponse.set(this.userRepository.findAll());
-        return ResponseEntity.ok(userResponse);
+        DataResponse<List<User>> userListResponse = new DataResponse<>();
+        userListResponse.set(this.userRepository.findAll());
+        return ResponseEntity.ok(userListResponse);
     }
 
     @GetMapping("{id}")
@@ -44,6 +69,30 @@ public class UserController {
         return ResponseEntity.ok(userResponse);
     }
 
+    @GetMapping("{id}/exercises")
+    public ResponseEntity<Response> getExercises(@PathVariable int id) {
+        User user = userRepository.findById(id).orElse(null);
+
+        ValidationError validationError = userValidator.validateExistingStudent(user);
+        if (validationError != null) {
+            ErrorResponse errorResponse = new ErrorResponse();
+            errorResponse.set(validationError.getMessage());
+            return new ResponseEntity<>(errorResponse, validationError.getStatus());
+        }
+
+        List<UserExercise> userExercises = userExerciseRepository.findAllByUser(user);
+
+        if (userExercises.isEmpty()) {
+            ErrorResponse error = new ErrorResponse();
+            error.set("No exercises found for this student");
+            return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+        }
+
+        UserExerciseListResponse listResponse = new UserExerciseListResponse();
+        listResponse.set(userExercises);
+
+        return ResponseEntity.ok(listResponse);
+    }
     @PutMapping("{id}/cohort/{cohortId}")
     public ResponseEntity<Response> assignCohortToStudent(@PathVariable int id, @PathVariable int cohortId){
         User user = this.userRepository.findById(id).orElse(null);
@@ -76,8 +125,36 @@ public class UserController {
         return ResponseEntity.ok(userResponse);
     }
 
+    private record userRequest(String firstName, String lastName, String phone, String githubUrl, String bio, String email, String password, Set<String> roles, int cohortId, int specialisationId, String jobTitle){}
+
     @PostMapping
-    public void registerUser() {
-        System.out.println("Register endpoint hit");
+    public ResponseEntity<Response> registerUser(@RequestBody userRequest userRequest) {
+        User newUser = new User();
+        ResponseEntity<Response> emailResponse = userService.setUserEmail(newUser, userRequest.email());
+        if (emailResponse != null) return emailResponse;
+
+        ResponseEntity<Response> passwordResponse = userService.setUserPassword(newUser, userRequest.password());
+        if (passwordResponse != null) return passwordResponse;
+
+        if (userRequest.cohortId() != 0) userService.assignUserToCohort(newUser, userRequest.cohortId());
+        if (userRequest.specialisationId() !=0) userService.assignSpecialisation(newUser, userRequest.specialisationId());
+
+        userService.assignRolesToUser(newUser, userRequest.roles());
+
+        Profile profile = new Profile(newUser,
+                userRequest.firstName(),
+                userRequest.lastName(),
+                userRequest.phone(),
+                userRequest.bio(),
+                userRequest.githubUrl);
+
+        if (userRequest.jobTitle != null) profile.setJobTitle(userRequest.jobTitle());
+
+        userRepository.save(newUser);
+        profileRepository.save(profile);
+
+        DataResponse<User> userResponse = new DataResponse<>();
+        userResponse.set(newUser);
+        return ResponseEntity.ok(userResponse);
     }
 }

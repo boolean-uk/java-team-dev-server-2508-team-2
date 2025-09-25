@@ -8,8 +8,6 @@ import com.booleanuk.cohorts.repository.UserExerciseRepository;
 import com.booleanuk.cohorts.repository.UserRepository;
 import com.booleanuk.cohorts.payload.response.ErrorResponse;
 import com.booleanuk.cohorts.payload.response.Response;
-import com.booleanuk.cohorts.payload.response.UserListResponse;
-import com.booleanuk.cohorts.payload.response.UserResponse;
 import com.booleanuk.cohorts.validation.UserValidator;
 import com.booleanuk.cohorts.validation.ValidationError;
 import jakarta.validation.constraints.Null;
@@ -83,7 +81,7 @@ public class UserController {
         listResponse.set(userExercises);
 
         return ResponseEntity.ok(listResponse);
-
+    }
     @PutMapping("{id}/cohort/{cohortId}")
     public ResponseEntity<Response> assignCohortToStudent(@PathVariable int id, @PathVariable int cohortId){
         User user = this.userRepository.findById(id).orElse(null);

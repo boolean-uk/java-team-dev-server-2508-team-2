@@ -57,7 +57,7 @@ public class User {
 
 
     @OneToOne(mappedBy = "user")
-    @JsonIgnore
+    @JsonIncludeProperties({"firstName", "lastName"})
     private Profile profile;
 
     @OneToMany(mappedBy = "user")

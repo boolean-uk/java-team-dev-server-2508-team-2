@@ -2,6 +2,7 @@ package com.booleanuk.cohorts.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -27,7 +28,7 @@ public class Post {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    @JsonIgnoreProperties("users")
+    @JsonIncludeProperties({"id", "profile", "email"})
     private User user;
 
     @CreationTimestamp
@@ -50,7 +51,6 @@ public class Post {
 
     @Transient
     public String getFirstName() {
-//        if (firstName != null && !firstName.isBlank()) return firstName;
         if(user != null && user.getProfile() != null){
             return user.getProfile().getFirstName();
         }
@@ -59,7 +59,6 @@ public class Post {
 
     @Transient
     public String getLastName() {
-//        if (lastName != null && !lastName.isBlank()) return lastName;
         if(user != null && user.getProfile() != null){
             return user.getProfile().getLastName();
         }

@@ -39,46 +39,6 @@ public class PostController {
         return ResponseEntity.ok(response);
     }
 
-//    @GetMapping
-//    public ResponseEntity<?> getAllPosts() {
-//        PostListResponse postListResponse = new PostListResponse();
-//        User user = this.userRepository.findById(1).orElse(null);
-//        if (user == null) {
-//            ErrorResponse error = new ErrorResponse();
-//            error.set("not found");
-//            return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
-//        }
-//        Profile profile = this.profileRepository.findById(user.getId()).orElse(null);
-//        if (profile == null) {
-//            ErrorResponse error = new ErrorResponse();
-//            error.set("not found");
-//            return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
-//        }
-//        Author author = new Author(user.getId(), user.getCohort().getId(), profile.getFirstName(),
-//                profile.getLastName(), user.getEmail(), profile.getBio(), profile.getGithubUrl());
-//        List<Post> posts = new ArrayList<>();
-//        Post post1 = this.postRepository.findById(1).orElse(null);
-//        if (post1 == null){
-//            ErrorResponse error = new ErrorResponse();
-//            error.set("not found");
-//            return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
-//        }
-//        post1.setAuthor(author);
-//        post1.setContent("Hello world!!");
-//        posts.add(post1);
-//        Post post2 = this.postRepository.findById(2).orElse(null);
-//        if (post2 == null){
-//            ErrorResponse error = new ErrorResponse();
-//            error.set("not found");
-//            return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
-//        }
-//        post2.setAuthor(author);
-//        post2.setContent("Hello from the void!!");
-//        posts.add(post2);
-//        postListResponse.set(posts);
-//        return ResponseEntity.ok(postListResponse);
-//    }
-
     @GetMapping("/{id}")
     public ResponseEntity<Response> getPostById(@PathVariable int id) {
         ErrorResponse error = new ErrorResponse();

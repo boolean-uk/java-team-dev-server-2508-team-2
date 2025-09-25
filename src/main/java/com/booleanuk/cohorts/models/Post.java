@@ -53,6 +53,7 @@ public class Post {
 
     @Transient
     public String getFirstName() {
+//        if (firstName != null && !firstName.isBlank()) return firstName;
         if(user != null && user.getProfile() != null){
             return user.getProfile().getFirstName();
         }
@@ -61,6 +62,7 @@ public class Post {
 
     @Transient
     public String getLastName() {
+//        if (lastName != null && !lastName.isBlank()) return lastName;
         if(user != null && user.getProfile() != null){
             return user.getProfile().getLastName();
         }
@@ -69,8 +71,8 @@ public class Post {
 
     @Transient
     public String getInitials(){
-        String firstInitial = firstName.substring(0, 1).toUpperCase();
-        String secondInitial = lastName.substring(0, 1).toUpperCase();
+        String firstInitial = getFirstName().substring(0, 1).toUpperCase();
+        String secondInitial = getLastName().substring(0, 1).toUpperCase();
 
         return (firstInitial + secondInitial);
     }

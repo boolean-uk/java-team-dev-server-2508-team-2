@@ -13,6 +13,7 @@ import com.booleanuk.cohorts.payload.response.UserResponse;
 import com.booleanuk.cohorts.validation.UserValidator;
 import com.booleanuk.cohorts.validation.ValidationError;
 import jakarta.validation.constraints.Null;
+import com.booleanuk.cohorts.payload.response.*;
 import com.booleanuk.cohorts.repository.CohortRepository;
 import com.booleanuk.cohorts.payload.response.*;
 import com.booleanuk.cohorts.repository.UserRepository;
@@ -41,9 +42,9 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<Response> getAllUsers() {
-        DataResponse<List<User>> userResponse = new DataResponse<>();
-        userResponse.set(this.userRepository.findAll());
-        return ResponseEntity.ok(userResponse);
+        DataResponse<List<User>> userListResponse = new DataResponse<>();
+        userListResponse.set(this.userRepository.findAll());
+        return ResponseEntity.ok(userListResponse);
     }
 
     @GetMapping("{id}")

@@ -13,6 +13,7 @@ import com.booleanuk.cohorts.repository.RoleRepository;
 import com.booleanuk.cohorts.repository.UserRepository;
 import com.booleanuk.cohorts.security.jwt.JwtUtils;
 import com.booleanuk.cohorts.security.services.UserDetailsImpl;
+import com.booleanuk.cohorts.services.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -39,7 +40,7 @@ public class AuthController {
     UserRepository userRepository;
 
     @Autowired
-    RoleRepository roleRepository;
+    UserService userService;
 
     @Autowired
     PasswordEncoder encoder;
@@ -90,34 +91,7 @@ public class AuthController {
             user.setCohort(signupRequest.getCohort());
         }
 
-        Set<String> strRoles = signupRequest.getRole();
-        Set<Role> roles = new HashSet<>();
-
-        if (strRoles == null) {
-            Role studentRole = roleRepository.findByName(ERole.ROLE_STUDENT)
-                    .orElseThrow(() -> new RuntimeException("Error: Role not found"));
-            roles.add(studentRole);
-        } else {
-            strRoles.forEach(role -> {
-                switch (role.toLowerCase()) {
-                    case "admin":
-                        Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
-                                .orElseThrow(() -> new RuntimeException("Error: Role not found"));
-                        roles.add(adminRole);
-                        break;
-                    case "teacher":
-                        Role teacherRole = roleRepository.findByName(ERole.ROLE_TEACHER)
-                                .orElseThrow(() -> new RuntimeException("Error: Role not found"));
-                        roles.add(teacherRole);
-                        break;
-                    default:
-                        Role studentRole = roleRepository.findByName(ERole.ROLE_STUDENT)
-                                .orElseThrow(() -> new RuntimeException("Error: Role not found"));
-                        roles.add(studentRole);
-                }
-            });
-        }
-        user.setRoles(roles);
+        userService.assignRolesToUser(user, signupRequest.getRole());
 
         userRepository.save(user);
 

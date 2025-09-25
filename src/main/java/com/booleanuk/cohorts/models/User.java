@@ -8,12 +8,12 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.util.HashSet;
 import java.util.Set;
 
 import static com.booleanuk.cohorts.models.ERole.ROLE_STUDENT;
+import static com.booleanuk.cohorts.models.ERole.ROLE_TEACHER;
 
 @NoArgsConstructor
 @Data
@@ -71,5 +71,9 @@ public class User {
 
     public boolean isStudent(){
         return roles.stream().anyMatch(r -> r.getName().equals(ROLE_STUDENT));
+    }
+
+    public boolean isTeacher(){
+        return roles.stream().anyMatch(r -> r.getName().equals(ROLE_TEACHER));
     }
 }

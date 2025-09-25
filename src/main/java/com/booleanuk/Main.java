@@ -11,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 @SpringBootApplication
@@ -27,6 +28,12 @@ public class Main implements CommandLineRunner {
     private PostRepository postRepository;
     @Autowired
     private SpecialisationRepository specialisationRepository;
+    @Autowired
+    private UnitRepository unitRepository;
+    @Autowired
+    private ExerciseRepository exerciseRepository;
+    @Autowired
+    private UserExerciseRepository userExerciseRepository;
     @Autowired
     PasswordEncoder encoder;
 
@@ -113,6 +120,65 @@ public class Main implements CommandLineRunner {
         }
         if (!this.postRepository.existsById(2)) {
             this.postRepository.save(new Post(teacherUser, "Hello, students!"));
+        }
+
+        //create units
+        Unit unit1;
+        if (!this.unitRepository.existsByName("Java")) {
+            unit1 = new Unit();
+            unit1.setName("Java");
+            unit1 = this.unitRepository.save(unit1);
+        } else {
+            unit1 = this.unitRepository.findByName("Java").orElse(null);
+        }
+
+        Unit unit2;
+        if (!this.unitRepository.existsByName("Data Structures")) {
+            unit2 = new Unit();
+            unit2.setName("Data Structures");
+            unit2 = this.unitRepository.save(unit2);
+        } else {
+            unit2 = this.unitRepository.findByName("Data Structures").orElse(null);
+        }
+
+        //create exercises
+        Exercise ex1;
+        if (!this.exerciseRepository.existsByName("Functions")) {
+            ex1 = new Exercise();
+            ex1.setName("Functions");
+            ex1.setUnit(unit1);
+            ex1 = this.exerciseRepository.save(ex1);
+        } else {
+            ex1 = this.exerciseRepository.findByName("Functions").orElse(null);
+        }
+
+        Exercise ex2;
+        if (!this.exerciseRepository.existsByName("Arrays")) {
+            ex2 = new Exercise();
+            ex2.setName("Arrays");
+            ex2.setUnit(unit2);
+            ex2 = this.exerciseRepository.save(ex2);
+        } else {
+            ex2 = this.exerciseRepository.findByName("Arrays").orElse(null);
+        }
+
+        //assign exercises to user
+        if (studentUser != null) {
+            if (ex1 != null && this.userExerciseRepository.findByUserAndExercise(studentUser, ex1).isEmpty()) {
+                UserExercise userExercise1 = new UserExercise();
+                userExercise1.setUser(studentUser);
+                userExercise1.setExercise(ex1);
+                userExercise1.setStatus(false);
+                this.userExerciseRepository.save(userExercise1);
+            }
+
+            if (ex2 != null && this.userExerciseRepository.findByUserAndExercise(studentUser, ex2).isEmpty()) {
+                UserExercise userExercise2 = new UserExercise();
+                userExercise2.setUser(studentUser);
+                userExercise2.setExercise(ex2);
+                userExercise2.setStatus(true);
+                this.userExerciseRepository.save(userExercise2);
+            }
         }
     }
 }

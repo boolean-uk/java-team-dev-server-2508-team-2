@@ -54,6 +54,10 @@ public class User {
     @JsonIncludeProperties({"id", "name"})
     private Specialisation specialisation;
 
+    @OneToMany(mappedBy = "user")
+    @JsonIgnoreProperties("user")
+    private Set<UserExercise> userExercises = new HashSet<>();
+
     public User(String email, String password) {
         this.email = email;
         this.password = password;

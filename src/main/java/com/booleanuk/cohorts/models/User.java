@@ -62,6 +62,7 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     @JsonIgnoreProperties("user")
+    @JsonIgnore
     private Set<UserExercise> userExercises = new HashSet<>();
 
     public User(String email, String password) {

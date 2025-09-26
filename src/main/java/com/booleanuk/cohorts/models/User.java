@@ -1,5 +1,6 @@
 package com.booleanuk.cohorts.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import jakarta.persistence.*;
@@ -53,6 +54,11 @@ public class User {
     @JoinColumn(name = "specialisation_id", nullable = true)
     @JsonIncludeProperties({"id", "name"})
     private Specialisation specialisation;
+
+
+    @OneToOne(mappedBy = "user")
+    @JsonIncludeProperties({"firstName", "lastName"})
+    private Profile profile;
 
     @OneToMany(mappedBy = "user")
     @JsonIgnoreProperties("user")
